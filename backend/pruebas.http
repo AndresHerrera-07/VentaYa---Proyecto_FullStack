@@ -1,0 +1,13 @@
+### ============================================================
+### VendeYa - Pruebas de API (REST Client)
+### ============================================================
+
+@baseUrl = http://localhost:3000/api
+
+### 1. Comprobar salud del servidor
+GET {{baseUrl}}/salud
+Accept: application/json
+
+### 2. Probar ruta no existente (debe responder 404)
+GET {{baseUrl}}/ruta-inexistente
+Accept: application/json
