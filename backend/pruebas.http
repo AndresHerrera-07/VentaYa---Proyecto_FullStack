@@ -11,3 +11,245 @@ Accept: application/json
 ### 2. Probar ruta no existente (debe responder 404)
 GET {{baseUrl}}/ruta-inexistente
 Accept: application/json
+
+### ============================================================
+### ENTREGA 2: CATÁLOGO PÚBLICO (HU-05 y HU-06)
+### ============================================================
+
+### 3. Consultar información pública de un negocio existente por su slug
+GET {{baseUrl}}/tiendas/antojitos-santa-tecla
+Accept: application/json
+
+### 4. Consultar negocio inexistente por slug (debe responder 404)
+GET {{baseUrl}}/tiendas/negocio-que-no-existe
+Accept: application/json
+
+### 5. Listar productos públicos del negocio
+GET {{baseUrl}}/tiendas/antojitos-santa-tecla/productos
+Accept: application/json
+
+### 6. Buscar productos por nombre o descripción (ej. "pupusas")
+GET {{baseUrl}}/tiendas/antojitos-santa-tecla/productos?busqueda=pupusas
+Accept: application/json
+
+### 7. Filtrar productos por categoría (ej. "Bebidas")
+GET {{baseUrl}}/tiendas/antojitos-santa-tecla/productos?categoria=Bebidas
+Accept: application/json
+
+### 8. Combinar buscador y filtro de categoría
+GET {{baseUrl}}/tiendas/antojitos-santa-tecla/productos?busqueda=cafe&categoria=Bebidas
+Accept: application/json
+
+### 9. Obtener categorías disponibles de la tienda
+GET {{baseUrl}}/tiendas/antojitos-santa-tecla/categorias
+Accept: application/json
+
+### ============================================================
+### ENTREGA 2: ADMINISTRACIÓN DE PRODUCTOS (HU-04)
+### ============================================================
+
+### 10. Listar todos los productos del negocio (para el dueño)
+GET {{baseUrl}}/productos
+Accept: application/json
+
+### 11. Registrar un nuevo producto válido (debe responder 201)
+POST {{baseUrl}}/productos
+Content-Type: application/json
+
+{
+  "nombre": "Tamales de Elote con Crema",
+  "descripcion": "Dos tamales de elote recién salidos de la olla, servidos con crema salvadoreña pura.",
+  "precio": 2.00,
+  "stock": 40,
+  "imagenUrl": "https://images.unsplash.com/photo-1565299585323-38d6b0865b47?w=500",
+  "categoria": "Comida Típica"
+}
+
+### 12. Intentar registrar un producto con precio negativo (debe fallar con 400 por Zod)
+POST {{baseUrl}}/productos
+Content-Type: application/json
+
+{
+  "nombre": "Producto Inválido",
+  "precio": -5.00,
+  "stock": 10
+}
+
+### 13. Intentar registrar producto con stock negativo o decimal (debe fallar con 400)
+POST {{baseUrl}}/productos
+Content-Type: application/json
+
+{
+  "nombre": "Producto Stock Mal",
+  "precio": 3.50,
+  "stock": -2
+}
+
+### 14. Actualizar precio y stock de un producto existente (ej. ID 1)
+PUT {{baseUrl}}/productos/1
+Content-Type: application/json
+
+{
+  "precio": 3.25,
+  "stock": 60
+}
+
+### 15. Borrado lógico de un producto (marca activo = 0)
+DELETE {{baseUrl}}/productos/5
+Accept: application/json
+
+
+### ============================================================
+### ENTREGA 3: CHECKOUT EXPRESS Y TRANSACCIONES SQL (HU-08)
+### ============================================================
+
+### 16. Realizar Checkout Express exitoso con transacción atómica (201)
+POST {{baseUrl}}/pedidos/checkout
+Content-Type: application/json
+
+{
+  "clienteNombre": "Sofía Martínez",
+  "clienteTelefono": "7555-1234",
+  "slug": "antojitos-santa-tecla",
+  "items": [
+    { "productoId": 1, "cantidad": 2 },
+    { "productoId": 2, "cantidad": 1 }
+  ]
+}
+
+### 17. Intentar Checkout con stock insuficiente (debe fallar con 409 y rollback)
+POST {{baseUrl}}/pedidos/checkout
+Content-Type: application/json
+
+{
+  "clienteNombre": "Cliente Sin Stock",
+  "clienteTelefono": "7000-0000",
+  "slug": "antojitos-santa-tecla",
+  "items": [
+    { "productoId": 1, "cantidad": 99999 }
+  ]
+}
+
+### 18. Intentar Checkout con datos inválidos de cliente (falla con 400 por Zod)
+POST {{baseUrl}}/pedidos/checkout
+Content-Type: application/json
+
+{
+  "clienteNombre": "A",
+  "clienteTelefono": "123",
+  "items": []
+}
+
+### ============================================================
+### ENTREGA 4: GESTIÓN DE PEDIDOS Y ESTADOS (HU-09)
+### ============================================================
+
+### 19. Listar todos los pedidos del comercio
+GET {{baseUrl}}/pedidos
+Accept: application/json
+
+### 20. Filtrar pedidos por estado (ej. "pendiente")
+GET {{baseUrl}}/pedidos?estado=pendiente
+Accept: application/json
+
+### 21. Consultar detalle de un pedido con sus productos
+GET {{baseUrl}}/pedidos/1
+Accept: application/json
+
+### 22. Cambiar estado de un pedido (pendiente -> confirmado)
+PUT {{baseUrl}}/pedidos/1/estado
+Content-Type: application/json
+
+{
+  "estado": "confirmado"
+}
+
+### 23. Cambiar estado a cancelado (restaura inventario automáticamente RN-10)
+PUT {{baseUrl}}/pedidos/1/estado
+Content-Type: application/json
+
+{
+  "estado": "cancelado"
+}
+
+### ============================================================
+### ENTREGA 4: DASHBOARD Y MÉTRICAS (HU-10)
+### ============================================================
+
+### 24. Consultar métricas del Dashboard (KPIs, ventas 7 días, distribución estados)
+GET {{baseUrl}}/pedidos/metricas/dashboard
+Accept: application/json
+
+
+### ============================================================
+### AUTENTICACIÓN Y ROLES DE USUARIO (HU-01 y HU-02)
+### ============================================================
+
+### 25. Iniciar sesión como DUEÑO (Acceso Total)
+# @name loginDueno
+POST {{baseUrl}}/auth/login
+Content-Type: application/json
+
+{
+  "correo": "carmen@antojitos.sv",
+  "password": "admin123"
+}
+
+### 26. Iniciar sesión como VENDEDOR (Operaciones y Pedidos)
+# @name loginVendedor
+POST {{baseUrl}}/auth/login
+Content-Type: application/json
+
+{
+  "correo": "vendedor@antojitos.sv",
+  "password": "admin123"
+}
+
+### 27. Intentar inicio de sesión con contraseña inválida (debe fallar con 401)
+POST {{baseUrl}}/auth/login
+Content-Type: application/json
+
+{
+  "correo": "carmen@antojitos.sv",
+  "password": "clave_incorrecta"
+}
+
+### 28. Consultar perfil autenticado usando el token JWT
+GET {{baseUrl}}/auth/perfil
+Authorization: Bearer {{loginDueno.response.body.datos.token}}
+Accept: application/json
+
+### 29. Dueño registra un nuevo vendedor en su equipo
+POST {{baseUrl}}/auth/vendedores
+Authorization: Bearer {{loginDueno.response.body.datos.token}}
+Content-Type: application/json
+
+{
+  "nombre": "Lucía Ayudante",
+  "correo": "lucia@antojitos.sv",
+  "password": "vendedor123"
+}
+
+### 30. Dueño lista los vendedores registrados en su negocio
+GET {{baseUrl}}/auth/vendedores
+Authorization: Bearer {{loginDueno.response.body.datos.token}}
+Accept: application/json
+
+### 31. Dueño actualiza su nombre de perfil
+PUT {{baseUrl}}/auth/perfil
+Authorization: Bearer {{loginDueno.response.body.datos.token}}
+Content-Type: application/json
+
+{
+  "nombre": "Carmen Gómez de Ortiz"
+}
+
+### 32. Dueño actualiza su contraseña de acceso
+PUT {{baseUrl}}/auth/perfil
+Authorization: Bearer {{loginDueno.response.body.datos.token}}
+Content-Type: application/json
+
+{
+  "passwordActual": "admin123",
+  "passwordNuevo": "admin456"
+}

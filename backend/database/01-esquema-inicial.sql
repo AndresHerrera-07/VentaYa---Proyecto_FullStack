@@ -67,7 +67,7 @@ CREATE TABLE productos (
   descripcion TEXT NULL,
   precio DECIMAL(10,2) NOT NULL,
   stock INT NOT NULL DEFAULT 0,
-  imagen_url VARCHAR(500) NULL,
+  imagen_url MEDIUMTEXT NULL,
   categoria VARCHAR(100) NULL,
   activo TINYINT(1) NOT NULL DEFAULT 1,
   creado_en TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
