@@ -3,3 +3,17 @@ dist/
 .env
 .env.*
 *.log
+
+node_modules/
+dist/
+.env
+.env.*
+*.log
+backend/database/data/
+
+node_modules/
+dist/
+.env
+.env.*
+*.log
+backend/database/data/
