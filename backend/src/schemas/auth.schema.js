@@ -31,13 +31,19 @@ export const crearVendedorSchema = z.object({
 });
 
 
-// Esquema para que el dueño actualice su nombre y/o contraseña
+// Esquema para que el usuario actualice su nombre, correo y/o contraseña
 export const actualizarPerfilSchema = z.object({
   nombre: z
     .string()
     .trim()
     .min(2, { message: 'El nombre debe contener al menos 2 caracteres' })
     .max(100, { message: 'El nombre no puede exceder 100 caracteres' })
+    .optional(),
+
+  correo: z
+    .string()
+    .trim()
+    .email({ message: 'El formato del correo electrónico no es válido' })
     .optional(),
 
   passwordActual: z
@@ -57,4 +63,13 @@ export const actualizarPerfilSchema = z.object({
 }, {
   message: 'Debes proporcionar tu contraseña actual para establecer una nueva',
   path: ['passwordActual']
+});
+
+// Esquema para que el dueño actualice el nombre de su negocio
+export const actualizarNegocioSchema = z.object({
+  nombre: z
+    .string({ required_error: 'El nombre del negocio es obligatorio' })
+    .trim()
+    .min(2, { message: 'El nombre del negocio debe contener al menos 2 caracteres' })
+    .max(100, { message: 'El nombre del negocio no puede exceder 100 caracteres' })
 });

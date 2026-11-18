@@ -3,7 +3,12 @@ import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import { pool } from '../db.js';
 import { validarSchema } from '../middlewares/validarSchema.js';
-import { loginSchema, crearVendedorSchema, actualizarPerfilSchema } from '../schemas/auth.schema.js';
+import {
+  loginSchema,
+  crearVendedorSchema,
+  actualizarPerfilSchema,
+  actualizarNegocioSchema
+} from '../schemas/auth.schema.js';
 import { verificarToken, verificarRol } from '../middlewares/auth.middleware.js';
 
 const router = Router();
@@ -113,8 +118,8 @@ router.get('/perfil', verificarToken, async (req, res, next) => {
 });
 
 // ============================================================
-// Actualizar perfil (Nombre y/o Contraseña) del usuario autenticado
-// Permite al dueño o vendedor cambiar su nombre y su contraseña
+// Actualizar perfil (Nombre, Correo y/o Contraseña) del usuario autenticado
+// Permite al dueño o vendedor cambiar su nombre, correo y contraseña
 // ============================================================
 router.put(
   '/perfil',
@@ -122,7 +127,7 @@ router.put(
   validarSchema(actualizarPerfilSchema),
   async (req, res, next) => {
     try {
-      const { nombre, passwordActual, passwordNuevo } = req.body;
+      const { nombre, correo, passwordActual, passwordNuevo } = req.body;
       const usuarioId = req.usuario.id;
 
       // 1. Obtener usuario actual con su hash
@@ -143,7 +148,25 @@ router.put(
 
       const usuario = usuarios[0];
 
-      // 2. Si se desea cambiar la contraseña, validar la contraseña actual
+      // 2. Si se desea cambiar el correo, comprobar que no esté en uso por otro usuario
+      let nuevoCorreo = usuario.correo;
+      if (correo && correo.toLowerCase().trim() !== usuario.correo.toLowerCase()) {
+        const correoNormalizado = correo.toLowerCase().trim();
+        const [existentes] = await pool.query(
+          'SELECT id FROM usuarios WHERE correo = ? AND id != ? LIMIT 1',
+          [correoNormalizado, usuarioId]
+        );
+
+        if (existentes.length > 0) {
+          return res.status(409).json({
+            ok: false,
+            mensaje: `El correo "${correo}" ya se encuentra registrado en otra cuenta`
+          });
+        }
+        nuevoCorreo = correoNormalizado;
+      }
+
+      // 3. Si se desea cambiar la contraseña, validar la contraseña actual
       let nuevoHash = usuario.password_hash;
       if (passwordNuevo) {
         const passwordCorrecta = await bcrypt.compare(passwordActual, usuario.password_hash);
@@ -156,18 +179,18 @@ router.put(
         nuevoHash = await bcrypt.hash(passwordNuevo, 10);
       }
 
-      // 3. Determinar el nombre final (si no se envió, conservar el actual)
+      // 4. Determinar el nombre final (si no se envió, conservar el actual)
       const nuevoNombre = nombre ? nombre.trim() : usuario.nombre;
 
-      // 4. Actualizar en la base de datos
+      // 5. Actualizar en la base de datos
       await pool.query(
         `UPDATE usuarios
-         SET nombre = ?, password_hash = ?
+         SET nombre = ?, correo = ?, password_hash = ?
          WHERE id = ?`,
-        [nuevoNombre, nuevoHash, usuarioId]
+        [nuevoNombre, nuevoCorreo, nuevoHash, usuarioId]
       );
 
-      // 5. Devolver usuario actualizado (sin password_hash)
+      // 6. Devolver usuario actualizado (sin password_hash)
       res.status(200).json({
         ok: true,
         mensaje: 'Perfil actualizado exitosamente',
@@ -175,9 +198,49 @@ router.put(
           id: usuario.id,
           negocioId: usuario.negocioId,
           nombre: nuevoNombre,
-          correo: usuario.correo,
+          correo: nuevoCorreo,
           rol: usuario.rol
         }
+      });
+    } catch (error) {
+      next(error);
+    }
+  }
+);
+
+// ============================================================
+// Actualizar información del Negocio (Solo para el Dueño)
+// Permite al dueño cambiar el título / nombre de su negocio
+// ============================================================
+router.put(
+  '/negocio',
+  verificarToken,
+  verificarRol('dueno'),
+  validarSchema(actualizarNegocioSchema),
+  async (req, res, next) => {
+    try {
+      const { nombre } = req.body;
+      const negocioId = req.usuario.negocioId;
+
+      await pool.query(
+        `UPDATE negocios
+         SET nombre = ?
+         WHERE id = ?`,
+        [nombre.trim(), negocioId]
+      );
+
+      const [negocios] = await pool.query(
+        `SELECT id, nombre, slug, telefono, direccion, logo_url AS logoUrl
+         FROM negocios
+         WHERE id = ?
+         LIMIT 1`,
+        [negocioId]
+      );
+
+      res.status(200).json({
+        ok: true,
+        mensaje: 'Nombre del negocio actualizado exitosamente',
+        datos: negocios[0]
       });
     } catch (error) {
       next(error);

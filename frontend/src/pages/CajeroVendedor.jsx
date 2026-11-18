@@ -9,10 +9,7 @@ import {
   CheckCircle2,
   AlertCircle,
   ClipboardList,
-  Store,
   DollarSign,
-  User,
-  Phone,
   Package,
   RotateCcw
 } from 'lucide-react';
@@ -72,7 +69,7 @@ export default function CajeroVendedor() {
     setItemsOrden((prev) => {
       const existe = prev.find((item) => item.producto.id === prod.id);
       if (existe) {
-        if (existe.cantidad >= prod.stock) {
+        if (prod.stock > 0 && existe.cantidad >= prod.stock) {
           setError(`No hay más existencias disponibles de "${prod.nombre}". Stock: ${prod.stock}`);
           return prev;
         }
@@ -90,7 +87,7 @@ export default function CajeroVendedor() {
       quitarDelTicket(productoId);
       return;
     }
-    if (nuevaCantidad > stockMax) {
+    if (stockMax > 0 && nuevaCantidad > stockMax) {
       setError(`Stock máximo alcanzado (${stockMax} unidades).`);
       return;
     }
@@ -188,47 +185,47 @@ export default function CajeroVendedor() {
   });
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 py-6 flex-1 w-full">
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 py-6 flex-1 w-full transition-colors duration-200">
       {/* Encabezado del Cajero */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
         <div>
           <div className="flex items-center gap-2 mb-1">
-            <span className="px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-blue-100 text-blue-900 border border-blue-200 inline-flex items-center gap-1">
+            <span className="px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-blue-100 dark:bg-blue-950/60 text-blue-900 dark:text-blue-200 border border-blue-200 dark:border-blue-800/60 inline-flex items-center gap-1">
               🧑‍💼 Terminal de Ventas / Cajero
             </span>
-            <span className="text-xs text-stone-500 font-medium">
-              Vendedor: <strong className="text-stone-800">{usuario?.nombre}</strong>
+            <span className="text-xs text-stone-500 dark:text-stone-400 font-medium">
+              Vendedor: <strong className="text-stone-800 dark:text-stone-200">{usuario?.nombre}</strong>
             </span>
           </div>
-          <h1 className="text-2xl font-bold text-stone-900 tracking-tight">
+          <h1 className="text-2xl font-bold text-stone-900 dark:text-stone-50 tracking-tight">
             Punto de Venta y Mostrador
           </h1>
-          <p className="text-xs text-stone-500">
+          <p className="text-xs text-stone-500 dark:text-stone-400">
             Registra pedidos de clientes en mesa, mostrador o por teléfono con actualización automática de inventario.
           </p>
         </div>
 
         <Link
           to="/admin/pedidos"
-          className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-white border border-stone-300 hover:bg-stone-50 text-stone-700 text-xs font-semibold shadow-xs transition-colors self-start sm:self-auto"
+          className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-white dark:bg-stone-800 border border-stone-300 dark:border-stone-700 hover:bg-stone-50 dark:hover:bg-stone-700 text-stone-700 dark:text-stone-200 text-xs font-semibold shadow-xs transition-colors self-start sm:self-auto"
         >
-          <ClipboardList className="w-4 h-4 text-amber-700" />
+          <ClipboardList className="w-4 h-4 text-amber-700 dark:text-amber-400" />
           <span>Ver Lista de Pedidos</span>
         </Link>
       </div>
 
       {/* Alerta de Venta Confirmada */}
       {pedidoExitoso && (
-        <div className="mb-6 p-4 rounded-2xl bg-emerald-50 border border-emerald-200 text-emerald-900 text-xs flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 shadow-xs animate-in fade-in">
+        <div className="mb-6 p-4 rounded-2xl bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800/60 text-emerald-900 dark:text-emerald-200 text-xs flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 shadow-xs animate-in fade-in">
           <div className="flex items-center gap-2.5">
-            <CheckCircle2 className="w-5 h-5 shrink-0 text-emerald-600" />
+            <CheckCircle2 className="w-5 h-5 shrink-0 text-emerald-600 dark:text-emerald-400" />
             <div>
-              <p className="font-bold text-emerald-950">
+              <p className="font-bold text-emerald-950 dark:text-emerald-100">
                 ¡Venta registrada exitosamente! — Pedido #{pedidoExitoso.id}
               </p>
-              <p className="text-emerald-700">
+              <p className="text-emerald-700 dark:text-emerald-300">
                 Cliente: <strong>{pedidoExitoso.clienteNombre}</strong> · Total:{' '}
-                <strong>${Number(pedidoExitoso.total).toFixed(2)}</strong> · Stock descontado.
+                <strong>${Number(pedidoExitoso.total).toFixed(2)}</strong>
               </p>
             </div>
           </div>
@@ -241,7 +238,7 @@ export default function CajeroVendedor() {
             </Link>
             <button
               onClick={() => setPedidoExitoso(null)}
-              className="px-3 py-1.5 rounded-lg bg-white border border-emerald-300 text-emerald-800 font-semibold text-xs hover:bg-emerald-100"
+              className="px-3 py-1.5 rounded-lg bg-white dark:bg-stone-800 border border-emerald-300 dark:border-emerald-700 text-emerald-800 dark:text-emerald-200 font-semibold text-xs hover:bg-emerald-100 dark:hover:bg-stone-700"
             >
               Cerrar
             </button>
@@ -251,14 +248,14 @@ export default function CajeroVendedor() {
 
       {/* Alerta de Error */}
       {error && (
-        <div className="mb-6 p-4 rounded-xl bg-rose-50 border border-rose-200 text-rose-900 text-xs flex items-center justify-between gap-2">
+        <div className="mb-6 p-4 rounded-xl bg-rose-50 dark:bg-rose-950/40 border border-rose-200 dark:border-rose-800/60 text-rose-900 dark:text-rose-200 text-xs flex items-center justify-between gap-2 shadow-xs">
           <div className="flex items-center gap-2">
-            <AlertCircle className="w-4 h-4 shrink-0 text-rose-600" />
+            <AlertCircle className="w-4 h-4 shrink-0 text-rose-600 dark:text-rose-400" />
             <span className="font-medium">{error}</span>
           </div>
           <button
             onClick={() => setError(null)}
-            className="text-rose-600 hover:text-rose-800 font-bold text-xs"
+            className="text-rose-600 dark:text-rose-400 hover:text-rose-800 font-bold text-xs"
           >
             Entendido
           </button>
@@ -269,7 +266,7 @@ export default function CajeroVendedor() {
         {/* Columna Izquierda (Catálogo de Productos) */}
         <div className="lg:col-span-7 xl:col-span-8 space-y-4">
           {/* Barra de Filtros */}
-          <div className="bg-white p-3.5 rounded-2xl border border-stone-200 shadow-xs flex flex-col sm:flex-row gap-3 items-center justify-between">
+          <div className="bg-white dark:bg-stone-900 p-3.5 rounded-2xl border border-stone-200 dark:border-stone-800 shadow-xs flex flex-col sm:flex-row gap-3 items-center justify-between transition-colors">
             <div className="relative w-full sm:w-72">
               <Search className="w-4 h-4 text-stone-400 absolute left-3 top-1/2 -translate-y-1/2" />
               <input
@@ -277,19 +274,19 @@ export default function CajeroVendedor() {
                 placeholder="Buscar por nombre..."
                 value={busqueda}
                 onChange={(e) => setBusqueda(e.target.value)}
-                className="w-full pl-9 pr-3.5 py-2 text-xs rounded-xl border border-stone-300 outline-hidden focus:ring-2 focus:ring-amber-500/20 focus:border-amber-600"
+                className="w-full pl-9 pr-3.5 py-2 text-xs rounded-xl border border-stone-300 dark:border-stone-700 bg-white dark:bg-stone-800 text-stone-900 dark:text-stone-100 placeholder-stone-400 outline-hidden focus:ring-2 focus:ring-amber-500/20 focus:border-amber-600"
               />
             </div>
 
             {/* Selector de Categoría */}
-            <div className="flex items-center gap-1.5 overflow-x-auto w-full sm:w-auto pb-1 sm:pb-0">
+            <div className="flex items-center gap-1.5 overflow-x-auto w-full sm:w-auto pb-1 sm:pb-0 scrollbar-none">
               <button
                 type="button"
                 onClick={() => setCategoriaSeleccionada('todas')}
                 className={`px-3 py-1.5 rounded-xl text-xs font-semibold whitespace-nowrap transition-colors ${
                   categoriaSeleccionada === 'todas'
                     ? 'bg-amber-700 text-white'
-                    : 'bg-stone-100 text-stone-600 hover:bg-stone-200'
+                    : 'bg-stone-100 dark:bg-stone-800 text-stone-600 dark:text-stone-300 hover:bg-stone-200 dark:hover:bg-stone-700'
                 }`}
               >
                 Todas
@@ -302,7 +299,7 @@ export default function CajeroVendedor() {
                   className={`px-3 py-1.5 rounded-xl text-xs font-semibold whitespace-nowrap transition-colors ${
                     categoriaSeleccionada === cat
                       ? 'bg-amber-700 text-white'
-                      : 'bg-stone-100 text-stone-600 hover:bg-stone-200'
+                      : 'bg-stone-100 dark:bg-stone-800 text-stone-600 dark:text-stone-300 hover:bg-stone-200 dark:hover:bg-stone-700'
                   }`}
                 >
                   {cat}
@@ -313,37 +310,37 @@ export default function CajeroVendedor() {
 
           {/* Grilla de Productos */}
           {cargando ? (
-            <div className="bg-white rounded-2xl border border-stone-200 p-12 text-center text-xs text-stone-500">
+            <div className="bg-white dark:bg-stone-900 rounded-2xl border border-stone-200 dark:border-stone-800 p-12 text-center text-xs text-stone-500 dark:text-stone-400">
               Cargando catálogo de productos...
             </div>
           ) : productosFiltrados.length === 0 ? (
-            <div className="bg-white rounded-2xl border border-stone-200 p-12 text-center text-xs text-stone-500">
+            <div className="bg-white dark:bg-stone-900 rounded-2xl border border-stone-200 dark:border-stone-800 p-12 text-center text-xs text-stone-500 dark:text-stone-400">
               No se encontraron productos disponibles para venta.
             </div>
           ) : (
             <div className="grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-4 gap-3.5">
               {productosFiltrados.map((prod) => {
-                const agotado = prod.stock <= 0;
+                const agotado = prod.stock === 0;
                 const enTicket = itemsOrden.find((i) => i.producto.id === prod.id);
 
                 return (
                   <div
                     key={prod.id}
-                    className={`bg-white rounded-xl border transition-all flex flex-col justify-between overflow-hidden shadow-2xs ${
+                    className={`bg-white dark:bg-stone-900 rounded-xl border transition-all flex flex-col justify-between overflow-hidden shadow-2xs ${
                       agotado
-                        ? 'opacity-60 border-stone-200 bg-stone-50'
-                        : 'border-stone-200 hover:border-amber-400 hover:shadow-xs'
+                        ? 'opacity-60 border-stone-200 dark:border-stone-800 bg-stone-50 dark:bg-stone-900/40'
+                        : 'border-stone-200 dark:border-stone-800 hover:border-amber-400 dark:hover:border-amber-500 hover:shadow-xs'
                     }`}
                   >
                     {prod.imagenUrl ? (
                       <img
                         src={prod.imagenUrl}
                         alt={prod.nombre}
-                        className="w-full h-28 object-cover bg-stone-100"
+                        className="w-full h-28 object-cover bg-stone-100 dark:bg-stone-800"
                         loading="lazy"
                       />
                     ) : (
-                      <div className="w-full h-28 bg-stone-100 flex items-center justify-center text-stone-300">
+                      <div className="w-full h-28 bg-stone-100 dark:bg-stone-800 flex items-center justify-center text-stone-300 dark:text-stone-600">
                         <Package className="w-8 h-8" />
                       </div>
                     )}
@@ -351,28 +348,29 @@ export default function CajeroVendedor() {
                     <div className="p-3 flex-1 flex flex-col justify-between">
                       <div>
                         <div className="flex items-center justify-between gap-1 mb-1">
-                          <span className="text-[10px] font-semibold text-stone-600 truncate">
+                          <span className="text-[10px] font-semibold text-stone-600 dark:text-stone-400 truncate">
                             {prod.categoria || 'General'}
                           </span>
                           <span
                             className={`text-[10px] font-bold px-1.5 py-0.5 rounded-md ${
                               prod.stock > 5
-                                ? 'bg-emerald-50 text-emerald-800 border border-emerald-200'
+                                ? 'bg-emerald-50 dark:bg-emerald-950/60 text-emerald-800 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800/60'
                                 : prod.stock > 0
-                                ? 'bg-amber-50 text-amber-900 border border-amber-200'
-                                : 'bg-rose-50 text-rose-800 border border-rose-200'
+                                ? 'bg-amber-50 dark:bg-amber-950/60 text-amber-900 dark:text-amber-300 border border-amber-200 dark:border-amber-800/60'
+                                : 'bg-rose-50 dark:bg-rose-950/60 text-rose-800 dark:text-rose-300 border border-rose-200 dark:border-rose-800/60'
                             }`}
                           >
-                            {prod.stock > 0 ? `${prod.stock} en stock` : 'Agotado'}
+                            {prod.stock > 0 ? `${prod.stock} en stock` : '0 stock'}
                           </span>
                         </div>
-                        <h3 className="text-xs font-bold text-stone-900 line-clamp-1 mb-1">
+                        {/* Título de producto con letra más grande y alto contraste */}
+                        <h3 className="text-sm font-bold text-stone-900 dark:text-stone-100 line-clamp-2 mb-1 leading-snug">
                           {prod.nombre}
                         </h3>
                       </div>
 
-                      <div className="mt-2 pt-2 border-t border-stone-100 flex items-center justify-between">
-                        <span className="text-sm font-extrabold text-amber-700">
+                      <div className="mt-2 pt-2 border-t border-stone-100 dark:border-stone-800 flex items-center justify-between">
+                        <span className="text-sm font-black text-amber-700 dark:text-amber-400">
                           ${Number(prod.precio).toFixed(2)}
                         </span>
 
@@ -382,10 +380,10 @@ export default function CajeroVendedor() {
                           onClick={() => agregarAlTicket(prod)}
                           className={`px-2.5 py-1 rounded-lg text-xs font-bold flex items-center gap-1 transition-colors ${
                             agotado
-                              ? 'bg-stone-200 text-stone-400 cursor-not-allowed'
+                              ? 'bg-stone-200 dark:bg-stone-800 text-stone-400 dark:text-stone-500 cursor-not-allowed'
                               : enTicket
-                              ? 'bg-amber-100 text-amber-900 border border-amber-300 hover:bg-amber-200'
-                              : 'bg-stone-900 hover:bg-stone-800 text-white'
+                              ? 'bg-amber-100 dark:bg-amber-950/60 text-amber-900 dark:text-amber-200 border border-amber-300 dark:border-amber-700 hover:bg-amber-200'
+                              : 'bg-stone-900 dark:bg-stone-100 hover:bg-stone-800 dark:hover:bg-white text-white dark:text-stone-900'
                           }`}
                         >
                           <Plus className="w-3.5 h-3.5" />
@@ -402,16 +400,16 @@ export default function CajeroVendedor() {
 
         {/* Columna Derecha (Ticket de Venta / Comanda) */}
         <div className="lg:col-span-5 xl:col-span-4">
-          <div className="bg-white rounded-2xl border border-stone-200 shadow-sm p-4 sticky top-20 flex flex-col h-[calc(100vh-6.5rem)]">
+          <div className="bg-white dark:bg-stone-900 rounded-2xl border border-stone-200 dark:border-stone-800 shadow-sm p-4 sticky top-20 flex flex-col h-[calc(100vh-6.5rem)] transition-colors">
             {/* Cabecera del Ticket */}
-            <div className="flex items-center justify-between pb-3 border-b border-stone-200">
+            <div className="flex items-center justify-between pb-3 border-b border-stone-200 dark:border-stone-800">
               <div className="flex items-center gap-2">
-                <div className="w-8 h-8 rounded-lg bg-amber-100 text-amber-800 flex items-center justify-center">
+                <div className="w-8 h-8 rounded-lg bg-amber-100 dark:bg-amber-950/60 text-amber-800 dark:text-amber-300 flex items-center justify-center">
                   <ShoppingBag className="w-4 h-4" />
                 </div>
                 <div>
-                  <h2 className="text-sm font-bold text-stone-900">Comanda de Venta</h2>
-                  <p className="text-[11px] text-stone-600">
+                  <h2 className="text-sm font-bold text-stone-900 dark:text-stone-100">Comanda de Venta</h2>
+                  <p className="text-[11px] text-stone-600 dark:text-stone-400">
                     {totalArticulos} {totalArticulos === 1 ? 'producto' : 'productos'}
                   </p>
                 </div>
@@ -421,7 +419,7 @@ export default function CajeroVendedor() {
                 <button
                   type="button"
                   onClick={limpiarTicket}
-                  className="text-[11px] text-stone-500 hover:text-rose-600 flex items-center gap-1 font-semibold"
+                  className="text-[11px] text-stone-500 hover:text-rose-600 dark:text-stone-400 dark:hover:text-rose-400 flex items-center gap-1 font-semibold"
                 >
                   <RotateCcw className="w-3.5 h-3.5" /> Vaciar
                 </button>
@@ -429,9 +427,9 @@ export default function CajeroVendedor() {
             </div>
 
             {/* Datos del Cliente */}
-            <div className="py-3 border-b border-stone-100 grid grid-cols-2 gap-2 text-xs">
+            <div className="py-3 border-b border-stone-100 dark:border-stone-800 grid grid-cols-2 gap-2 text-xs">
               <div>
-                <label className="block text-[11px] font-semibold text-stone-600 mb-0.5">
+                <label className="block text-[11px] font-semibold text-stone-600 dark:text-stone-400 mb-0.5">
                   Cliente:
                 </label>
                 <div className="relative">
@@ -440,12 +438,12 @@ export default function CajeroVendedor() {
                     value={clienteNombre}
                     onChange={(e) => setClienteNombre(e.target.value)}
                     placeholder="Nombre o Mesa"
-                    className="w-full px-2.5 py-1 rounded-lg border border-stone-300 text-xs outline-hidden focus:border-amber-600"
+                    className="w-full px-2.5 py-1 rounded-lg border border-stone-300 dark:border-stone-700 bg-white dark:bg-stone-800 text-stone-900 dark:text-stone-100 text-xs outline-hidden focus:border-amber-600"
                   />
                 </div>
               </div>
               <div>
-                <label className="block text-[11px] font-semibold text-stone-600 mb-0.5">
+                <label className="block text-[11px] font-semibold text-stone-600 dark:text-stone-400 mb-0.5">
                   Teléfono:
                 </label>
                 <div className="relative">
@@ -454,7 +452,7 @@ export default function CajeroVendedor() {
                     value={clienteTelefono}
                     onChange={(e) => setClienteTelefono(e.target.value)}
                     placeholder="7000-0000"
-                    className="w-full px-2.5 py-1 rounded-lg border border-stone-300 text-xs outline-hidden focus:border-amber-600"
+                    className="w-full px-2.5 py-1 rounded-lg border border-stone-300 dark:border-stone-700 bg-white dark:bg-stone-800 text-stone-900 dark:text-stone-100 text-xs outline-hidden focus:border-amber-600"
                   />
                 </div>
               </div>
@@ -463,10 +461,10 @@ export default function CajeroVendedor() {
             {/* Lista de Items del Ticket */}
             <div className="flex-1 overflow-y-auto py-2 space-y-2 pr-1">
               {itemsOrden.length === 0 ? (
-                <div className="h-full flex flex-col items-center justify-center text-center p-6 text-stone-400">
+                <div className="h-full flex flex-col items-center justify-center text-center p-6 text-stone-400 dark:text-stone-500">
                   <ShoppingBag className="w-10 h-10 mb-2 stroke-1" />
                   <p className="text-xs font-medium">El ticket está vacío</p>
-                  <p className="text-[11px] text-stone-400">
+                  <p className="text-[11px] text-stone-400 dark:text-stone-500">
                     Haz clic en "Agregar" en cualquiera de los productos del catálogo.
                   </p>
                 </div>
@@ -476,13 +474,13 @@ export default function CajeroVendedor() {
                   return (
                     <div
                       key={producto.id}
-                      className="p-2.5 rounded-xl bg-stone-50 border border-stone-200/80 flex items-center justify-between gap-2"
+                      className="p-2.5 rounded-xl bg-stone-50 dark:bg-stone-800/80 border border-stone-200/80 dark:border-stone-700 flex items-center justify-between gap-2"
                     >
                       <div className="flex-1 min-w-0">
-                        <p className="text-xs font-bold text-stone-900 truncate">
+                        <p className="text-xs font-bold text-stone-900 dark:text-stone-100 truncate">
                           {producto.nombre}
                         </p>
-                        <p className="text-[11px] text-stone-500">
+                        <p className="text-[11px] text-stone-500 dark:text-stone-400">
                           ${Number(producto.precio).toFixed(2)} c/u
                         </p>
                       </div>
@@ -492,15 +490,15 @@ export default function CajeroVendedor() {
                         <button
                           type="button"
                           onClick={() => cambiarCantidad(producto.id, cantidad - 1, producto.stock)}
-                          className="w-6 h-6 rounded-md bg-white border border-stone-300 flex items-center justify-center text-stone-600 hover:bg-stone-100"
+                          className="w-6 h-6 rounded-md bg-white dark:bg-stone-700 border border-stone-300 dark:border-stone-600 flex items-center justify-center text-stone-600 dark:text-stone-200 hover:bg-stone-100 dark:hover:bg-stone-600"
                         >
                           <Minus className="w-3 h-3" />
                         </button>
-                        <span className="text-xs font-bold w-5 text-center">{cantidad}</span>
+                        <span className="text-xs font-bold text-stone-900 dark:text-stone-100 w-5 text-center">{cantidad}</span>
                         <button
                           type="button"
                           onClick={() => cambiarCantidad(producto.id, cantidad + 1, producto.stock)}
-                          className="w-6 h-6 rounded-md bg-white border border-stone-300 flex items-center justify-center text-stone-600 hover:bg-stone-100"
+                          className="w-6 h-6 rounded-md bg-white dark:bg-stone-700 border border-stone-300 dark:border-stone-600 flex items-center justify-center text-stone-600 dark:text-stone-200 hover:bg-stone-100 dark:hover:bg-stone-600"
                         >
                           <Plus className="w-3 h-3" />
                         </button>
@@ -508,7 +506,7 @@ export default function CajeroVendedor() {
 
                       {/* Subtotal y Eliminar */}
                       <div className="text-right pl-2">
-                        <p className="text-xs font-extrabold text-stone-900">
+                        <p className="text-xs font-extrabold text-stone-900 dark:text-stone-100">
                           ${subtotal.toFixed(2)}
                         </p>
                         <button
@@ -526,10 +524,10 @@ export default function CajeroVendedor() {
             </div>
 
             {/* Pie del Ticket con Total y Botón de Venta */}
-            <div className="pt-3 border-t border-stone-200 space-y-3">
+            <div className="pt-3 border-t border-stone-200 dark:border-stone-800 space-y-3">
               <div className="flex items-center justify-between">
-                <span className="text-xs font-semibold text-stone-600">Total a Pagar</span>
-                <span className="text-2xl font-black text-amber-700">
+                <span className="text-xs font-semibold text-stone-600 dark:text-stone-400">Total a Pagar</span>
+                <span className="text-2xl font-black text-amber-700 dark:text-amber-400">
                   ${totalPrecio.toFixed(2)}
                 </span>
               </div>

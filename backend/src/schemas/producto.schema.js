@@ -24,11 +24,12 @@ export const crearProductoSchema = z.object({
 
   stock: z
     .number({
-      required_error: 'La cantidad de existencias (stock) es obligatoria',
       invalid_type_error: 'El stock debe ser un número entero'
     })
     .int({ message: 'El stock debe ser un número entero sin decimales' })
-    .min(0, { message: 'El inventario no puede ser negativo' }),
+    .min(0, { message: 'El inventario no puede ser negativo' })
+    .optional()
+    .default(0),
 
   imagenUrl: z
     .string()

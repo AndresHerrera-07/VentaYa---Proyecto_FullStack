@@ -251,9 +251,9 @@ export default function CatalogoPublico() {
   }
 
   return (
-    <div className="min-h-screen pb-24 relative">
+    <div className="min-h-screen pb-24 relative transition-colors duration-200">
       {/* 1. Encabezado del Comercio */}
-      <section className="bg-white border-b border-stone-200">
+      <section className="bg-white dark:bg-stone-900 border-b border-stone-200 dark:border-stone-800 transition-colors">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 py-8">
           <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6">
             <div className="flex items-center gap-4">
@@ -261,23 +261,23 @@ export default function CatalogoPublico() {
                 <img
                   src={tienda.logoUrl}
                   alt={tienda.nombre}
-                  className="w-20 h-20 rounded-2xl object-cover border border-stone-200 shadow-xs"
+                  className="w-20 h-20 rounded-2xl object-cover border border-stone-200 dark:border-stone-700 shadow-xs"
                 />
               ) : (
-                <div className="w-20 h-20 rounded-2xl bg-amber-700 text-white flex items-center justify-center shadow-xs">
+                <div className="w-20 h-20 rounded-2xl bg-amber-700 dark:bg-amber-600 text-white flex items-center justify-center shadow-xs">
                   <Store className="w-9 h-9" />
                 </div>
               )}
               <div>
                 <div className="flex items-center gap-2 mb-1">
-                  <h1 className="text-2xl sm:text-3xl font-extrabold text-stone-900 tracking-tight">
+                  <h1 className="text-2xl sm:text-3xl font-extrabold text-stone-900 dark:text-stone-50 tracking-tight">
                     {tienda.nombre}
                   </h1>
-                  <span className="hidden sm:inline-flex items-center gap-1 text-[11px] font-semibold px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-800 border border-emerald-200">
+                  <span className="hidden sm:inline-flex items-center gap-1 text-[11px] font-semibold px-2 py-0.5 rounded-full bg-emerald-50 dark:bg-emerald-950/40 text-emerald-800 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800/60">
                     <CheckCircle2 className="w-3 h-3" /> Verificado
                   </span>
                 </div>
-                <div className="flex flex-wrap items-center gap-y-1 gap-x-4 text-xs text-stone-500">
+                <div className="flex flex-wrap items-center gap-y-1 gap-x-4 text-xs text-stone-500 dark:text-stone-400">
                   {tienda.direccion && (
                     <span className="flex items-center gap-1">
                       <MapPin className="w-3.5 h-3.5 text-stone-400" />
@@ -287,7 +287,7 @@ export default function CatalogoPublico() {
                   {tienda.telefono && (
                     <a
                       href={`tel:${tienda.telefono}`}
-                      className="flex items-center gap-1 hover:text-amber-700 transition-colors"
+                      className="flex items-center gap-1 hover:text-amber-700 dark:hover:text-amber-400 transition-colors"
                     >
                       <Phone className="w-3.5 h-3.5 text-stone-400" />
                       {tienda.telefono}
@@ -327,12 +327,12 @@ export default function CatalogoPublico() {
               placeholder="Buscar por nombre o descripción..."
               value={busqueda}
               onChange={(e) => setBusqueda(e.target.value)}
-              className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-stone-300 bg-white text-sm focus:outline-hidden focus:ring-2 focus:ring-amber-500/20 focus:border-amber-600 transition-all placeholder:text-stone-400"
+              className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-stone-300 dark:border-stone-700 bg-white dark:bg-stone-800 text-stone-900 dark:text-stone-100 text-sm focus:outline-hidden focus:ring-2 focus:ring-amber-500/20 focus:border-amber-600 transition-all placeholder:text-stone-400 dark:placeholder:text-stone-500"
             />
             {busqueda && (
               <button
                 onClick={() => setBusqueda('')}
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-stone-400 hover:text-stone-600 text-xs px-1"
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-stone-400 hover:text-stone-600 dark:hover:text-stone-200 text-xs px-1"
               >
                 Limpiar
               </button>
@@ -340,8 +340,8 @@ export default function CatalogoPublico() {
           </div>
 
           {/* Contador de resultados */}
-          <div className="text-xs text-stone-500 flex items-center gap-1.5 self-end md:self-center">
-            <Sparkles className="w-3.5 h-3.5 text-amber-600" />
+          <div className="text-xs text-stone-500 dark:text-stone-400 flex items-center gap-1.5 self-end md:self-center">
+            <Sparkles className="w-3.5 h-3.5 text-amber-600 dark:text-amber-400" />
             <span>
               {cargandoProductos
                 ? 'Buscando...'
@@ -358,7 +358,7 @@ export default function CatalogoPublico() {
               className={`px-3.5 py-1.5 rounded-full text-xs font-medium whitespace-nowrap transition-colors ${
                 categoriaSeleccionada === 'todas'
                   ? 'bg-amber-700 text-white shadow-xs'
-                  : 'bg-white border border-stone-200 text-stone-700 hover:bg-stone-100'
+                  : 'bg-white dark:bg-stone-800 border border-stone-200 dark:border-stone-700 text-stone-700 dark:text-stone-300 hover:bg-stone-100 dark:hover:bg-stone-700'
               }`}
             >
               Todas las categorías
@@ -370,7 +370,7 @@ export default function CatalogoPublico() {
                 className={`px-3.5 py-1.5 rounded-full text-xs font-medium whitespace-nowrap transition-colors ${
                   categoriaSeleccionada === cat
                     ? 'bg-amber-700 text-white shadow-xs'
-                    : 'bg-white border border-stone-200 text-stone-700 hover:bg-stone-100'
+                    : 'bg-white dark:bg-stone-800 border border-stone-200 dark:border-stone-700 text-stone-700 dark:text-stone-300 hover:bg-stone-100 dark:hover:bg-stone-700'
                 }`}
               >
                 {cat}
@@ -427,15 +427,15 @@ export default function CatalogoPublico() {
               return (
                 <div
                   key={prod.id}
-                  className={`bg-white rounded-2xl border border-stone-200 overflow-hidden flex flex-col justify-between transition-all duration-200 ${
+                  className={`bg-white dark:bg-stone-900 rounded-2xl border border-stone-200 dark:border-stone-800 overflow-hidden flex flex-col justify-between transition-all duration-200 shadow-xs ${
                     estaAgotado
-                      ? 'opacity-70 bg-stone-50/80'
-                      : 'hover:shadow-md hover:border-stone-300'
+                      ? 'opacity-70 bg-stone-50/80 dark:bg-stone-900/60'
+                      : 'hover:shadow-md hover:border-stone-300 dark:hover:border-stone-700'
                   }`}
                 >
                   <div>
                     {/* Imagen del producto */}
-                    <div className="relative h-48 bg-stone-100 overflow-hidden">
+                    <div className="relative h-48 bg-stone-100 dark:bg-stone-800 overflow-hidden">
                       {prod.imagenUrl ? (
                         <img
                           src={prod.imagenUrl}
@@ -471,13 +471,13 @@ export default function CatalogoPublico() {
                       </div>
                     </div>
 
-                    {/* Información descriptiva */}
+                    {/* Información descriptiva — Nombre con letra más grande y alto contraste */}
                     <div className="p-5">
-                      <h3 className="font-bold text-stone-900 text-base leading-snug mb-1.5">
+                      <h3 className="font-black text-stone-900 dark:text-stone-50 text-lg sm:text-xl leading-tight mb-2 tracking-tight">
                         {prod.nombre}
                       </h3>
                       {prod.descripcion && (
-                        <p className="text-stone-500 text-xs line-clamp-2 leading-relaxed mb-4">
+                        <p className="text-stone-500 dark:text-stone-400 text-xs line-clamp-2 leading-relaxed mb-4">
                           {prod.descripcion}
                         </p>
                       )}
@@ -485,10 +485,10 @@ export default function CatalogoPublico() {
                   </div>
 
                   {/* Pie de tarjeta con precio en dólares y agregar al carrito */}
-                  <div className="px-5 pb-5 pt-2 border-t border-stone-100 flex items-center justify-between">
+                  <div className="px-5 pb-5 pt-3 border-t border-stone-100 dark:border-stone-800 flex items-center justify-between">
                     <div>
-                      <span className="text-[10px] text-stone-600 block uppercase font-medium">Precio</span>
-                      <span className="text-xl font-black text-stone-900 tracking-tight">
+                      <span className="text-[10px] text-stone-500 dark:text-stone-400 block uppercase font-medium">Precio</span>
+                      <span className="text-xl font-black text-stone-900 dark:text-stone-50 tracking-tight">
                         ${Number(prod.precio).toFixed(2)}
                       </span>
                     </div>
@@ -498,7 +498,7 @@ export default function CatalogoPublico() {
                       disabled={estaAgotado}
                       className={`px-4 py-2 rounded-xl text-xs font-semibold transition-all flex items-center gap-1.5 ${
                         estaAgotado
-                          ? 'bg-stone-200 text-stone-400 cursor-not-allowed'
+                          ? 'bg-stone-200 dark:bg-stone-800 text-stone-400 cursor-not-allowed'
                           : recienAgregado
                           ? 'bg-emerald-600 text-white shadow-xs scale-105'
                           : 'bg-amber-700 hover:bg-amber-800 text-white shadow-xs active:scale-95'
@@ -551,23 +551,23 @@ export default function CatalogoPublico() {
           {/* Fondo difuminado */}
           <div
             onClick={() => setCarritoAbierto(false)}
-            className="absolute inset-0 bg-stone-900/50 backdrop-blur-xs transition-opacity"
+            className="absolute inset-0 bg-stone-900/60 dark:bg-black/75 backdrop-blur-xs transition-opacity"
           />
 
           <div className="fixed inset-y-0 right-0 max-w-full flex pl-10">
-            <div className="w-screen max-w-md bg-white shadow-2xl flex flex-col justify-between">
+            <div className="w-screen max-w-md bg-white dark:bg-stone-900 shadow-2xl flex flex-col justify-between transition-colors">
               {/* Encabezado del carrito */}
-              <div className="px-6 py-5 border-b border-stone-200 flex items-center justify-between bg-stone-50">
+              <div className="px-6 py-5 border-b border-stone-200 dark:border-stone-800 flex items-center justify-between bg-stone-50 dark:bg-stone-800/50">
                 <div className="flex items-center gap-2">
-                  <ShoppingBag className="w-5 h-5 text-amber-700" />
-                  <h2 className="text-base font-bold text-stone-900">Tu Carrito de Compras</h2>
-                  <span className="text-xs bg-amber-100 text-amber-900 font-semibold px-2 py-0.5 rounded-full">
+                  <ShoppingBag className="w-5 h-5 text-amber-700 dark:text-amber-500" />
+                  <h2 className="text-base font-bold text-stone-900 dark:text-stone-50">Tu Carrito de Compras</h2>
+                  <span className="text-xs bg-amber-100 dark:bg-amber-950/60 text-amber-900 dark:text-amber-200 font-semibold px-2 py-0.5 rounded-full border border-amber-200 dark:border-amber-800/60">
                     {totalArticulos} item{totalArticulos === 1 ? '' : 's'}
                   </span>
                 </div>
                 <button
                   onClick={() => setCarritoAbierto(false)}
-                  className="text-stone-400 hover:text-stone-700 transition-colors p-1"
+                  className="text-stone-400 hover:text-stone-700 dark:hover:text-stone-200 transition-colors p-1"
                 >
                   <X className="w-5 h-5" />
                 </button>
@@ -576,10 +576,10 @@ export default function CatalogoPublico() {
               {/* Lista de productos en el carrito */}
               <div className="flex-1 overflow-y-auto p-6 space-y-4">
                 {itemsCarrito.length === 0 ? (
-                  <div className="text-center py-16 text-stone-400">
+                  <div className="text-center py-16 text-stone-400 dark:text-stone-500">
                     <ShoppingCart className="w-12 h-12 mx-auto mb-3 stroke-1" />
-                    <p className="text-sm font-semibold text-stone-700">Tu carrito está vacío</p>
-                    <p className="text-xs text-stone-500 mt-1">
+                    <p className="text-sm font-semibold text-stone-700 dark:text-stone-300">Tu carrito está vacío</p>
+                    <p className="text-xs text-stone-500 dark:text-stone-400 mt-1">
                       Agrega productos del catálogo para comenzar tu pedido.
                     </p>
                   </div>
@@ -587,25 +587,25 @@ export default function CatalogoPublico() {
                   itemsCarrito.map((item) => (
                     <div
                       key={item.producto.id}
-                      className="flex items-center gap-4 p-3 rounded-xl border border-stone-200 bg-white shadow-xs"
+                      className="flex items-center gap-4 p-3 rounded-xl border border-stone-200 dark:border-stone-800 bg-white dark:bg-stone-800/80 shadow-xs"
                     >
                       {item.producto.imagenUrl ? (
                         <img
                           src={item.producto.imagenUrl}
                           alt={item.producto.nombre}
-                          className="w-16 h-16 rounded-lg object-cover border border-stone-200"
+                          className="w-16 h-16 rounded-lg object-cover border border-stone-200 dark:border-stone-700"
                         />
                       ) : (
-                        <div className="w-16 h-16 rounded-lg bg-stone-100 text-stone-400 flex items-center justify-center">
+                        <div className="w-16 h-16 rounded-lg bg-stone-100 dark:bg-stone-800 text-stone-400 flex items-center justify-center">
                           <Tag className="w-6 h-6" />
                         </div>
                       )}
 
                       <div className="flex-1 min-w-0">
-                        <h4 className="text-xs font-bold text-stone-900 truncate">
+                        <h4 className="text-xs font-bold text-stone-900 dark:text-stone-100 truncate">
                           {item.producto.nombre}
                         </h4>
-                        <span className="text-xs text-stone-500">
+                        <span className="text-xs text-stone-500 dark:text-stone-400">
                           ${Number(item.producto.precio).toFixed(2)} c/u
                         </span>
 
@@ -613,11 +613,11 @@ export default function CatalogoPublico() {
                         <div className="flex items-center gap-2 mt-2">
                           <button
                             onClick={() => actualizarCantidad(item.producto.id, item.cantidad - 1)}
-                            className="w-6 h-6 rounded-md bg-stone-100 hover:bg-stone-200 text-stone-700 flex items-center justify-center text-xs font-bold transition-colors"
+                            className="w-6 h-6 rounded-md bg-stone-100 dark:bg-stone-700 hover:bg-stone-200 dark:hover:bg-stone-600 text-stone-700 dark:text-stone-200 flex items-center justify-center text-xs font-bold transition-colors"
                           >
                             <Minus className="w-3 h-3" />
                           </button>
-                          <span className="text-xs font-bold text-stone-800 w-6 text-center">
+                          <span className="text-xs font-bold text-stone-800 dark:text-stone-200 w-6 text-center">
                             {item.cantidad}
                           </span>
                           <button
@@ -625,8 +625,8 @@ export default function CatalogoPublico() {
                             disabled={item.cantidad >= item.producto.stock}
                             className={`w-6 h-6 rounded-md flex items-center justify-center text-xs font-bold transition-colors ${
                               item.cantidad >= item.producto.stock
-                                ? 'bg-stone-100 text-stone-300 cursor-not-allowed'
-                                : 'bg-stone-100 hover:bg-stone-200 text-stone-700'
+                                ? 'bg-stone-100 dark:bg-stone-800 text-stone-300 dark:text-stone-600 cursor-not-allowed'
+                                : 'bg-stone-100 dark:bg-stone-700 hover:bg-stone-200 dark:hover:bg-stone-600 text-stone-700 dark:text-stone-200'
                             }`}
                           >
                             <Plus className="w-3 h-3" />
@@ -643,7 +643,7 @@ export default function CatalogoPublico() {
                         >
                           <Trash2 className="w-4 h-4" />
                         </button>
-                        <span className="text-xs font-black text-stone-900">
+                        <span className="text-xs font-black text-stone-900 dark:text-stone-100">
                           ${(Number(item.producto.precio) * item.cantidad).toFixed(2)}
                         </span>
                       </div>
@@ -654,10 +654,10 @@ export default function CatalogoPublico() {
 
               {/* Pie de carrito y botón de Checkout */}
               {itemsCarrito.length > 0 && (
-                <div className="border-t border-stone-200 p-6 bg-stone-50 space-y-4">
+                <div className="border-t border-stone-200 dark:border-stone-800 p-6 bg-stone-50 dark:bg-stone-900 space-y-4">
                   <div className="flex justify-between items-center text-sm">
-                    <span className="text-stone-600 font-medium">Total a pagar</span>
-                    <span className="text-2xl font-black text-stone-900">
+                    <span className="text-stone-600 dark:text-stone-400 font-medium">Total a pagar</span>
+                    <span className="text-2xl font-black text-stone-900 dark:text-stone-50">
                       ${totalPrecio.toFixed(2)}
                     </span>
                   </div>
@@ -675,7 +675,7 @@ export default function CatalogoPublico() {
 
                   <button
                     onClick={vaciarCarrito}
-                    className="w-full text-center text-xs text-stone-400 hover:text-stone-600 transition-colors"
+                    className="w-full text-center text-xs text-stone-400 dark:text-stone-500 hover:text-stone-600 dark:hover:text-stone-300 transition-colors"
                   >
                     Vaciar todo el carrito
                   </button>
@@ -688,14 +688,14 @@ export default function CatalogoPublico() {
 
       {/* 5. Modal de Checkout Express (HU-08) */}
       {checkoutAbierto && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-stone-900/60 backdrop-blur-xs overflow-y-auto">
-          <div className="bg-white rounded-2xl max-w-lg w-full p-6 sm:p-8 shadow-2xl relative my-8">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-stone-900/60 dark:bg-black/75 backdrop-blur-xs overflow-y-auto">
+          <div className="bg-white dark:bg-stone-900 border border-stone-200 dark:border-stone-800 rounded-2xl max-w-lg w-full p-6 sm:p-8 shadow-2xl relative my-8 transition-colors">
             <button
               onClick={() => {
                 setCheckoutAbierto(false);
                 setPedidoConfirmado(null);
               }}
-              className="absolute top-5 right-5 text-stone-400 hover:text-stone-600"
+              className="absolute top-5 right-5 text-stone-400 hover:text-stone-600 dark:hover:text-stone-200"
             >
               <X className="w-5 h-5" />
             </button>
@@ -703,26 +703,26 @@ export default function CatalogoPublico() {
             {pedidoConfirmado ? (
               /* Vista de Éxito tras confirmación del pedido */
               <div className="text-center py-4">
-                <div className="w-16 h-16 rounded-full bg-emerald-100 text-emerald-600 flex items-center justify-center mx-auto mb-4">
+                <div className="w-16 h-16 rounded-full bg-emerald-100 dark:bg-emerald-950/60 text-emerald-600 dark:text-emerald-400 flex items-center justify-center mx-auto mb-4 border border-emerald-200 dark:border-emerald-800/60">
                   <CheckCircle2 className="w-10 h-10" />
                 </div>
-                <h3 className="text-2xl font-black text-stone-900 mb-1">¡Pedido Registrado con Éxito!</h3>
-                <p className="text-xs text-stone-500 mb-6">
+                <h3 className="text-2xl font-black text-stone-900 dark:text-stone-50 mb-1">¡Pedido Registrado con Éxito!</h3>
+                <p className="text-xs text-stone-500 dark:text-stone-400 mb-6">
                   Orden #{pedidoConfirmado.pedidoId} asignada al comercio {tienda.nombre}
                 </p>
 
-                <div className="bg-stone-50 rounded-xl p-4 border border-stone-200 text-left mb-6 text-xs space-y-2">
+                <div className="bg-stone-50 dark:bg-stone-800/60 rounded-xl p-4 border border-stone-200 dark:border-stone-700 text-left mb-6 text-xs space-y-2">
                   <div className="flex justify-between">
-                    <span className="text-stone-500">Cliente:</span>
-                    <span className="font-semibold text-stone-800">{pedidoConfirmado.clienteNombre}</span>
+                    <span className="text-stone-500 dark:text-stone-400">Cliente:</span>
+                    <span className="font-semibold text-stone-800 dark:text-stone-200">{pedidoConfirmado.clienteNombre}</span>
                   </div>
                   <div className="flex justify-between">
-                    <span className="text-stone-500">Teléfono:</span>
-                    <span className="font-semibold text-stone-800">{pedidoConfirmado.clienteTelefono}</span>
+                    <span className="text-stone-500 dark:text-stone-400">Teléfono:</span>
+                    <span className="font-semibold text-stone-800 dark:text-stone-200">{pedidoConfirmado.clienteTelefono}</span>
                   </div>
-                  <div className="flex justify-between border-t border-stone-200 pt-2 font-bold text-sm">
-                    <span className="text-stone-800">Total a Pagar:</span>
-                    <span className="text-amber-800">${Number(pedidoConfirmado.total).toFixed(2)}</span>
+                  <div className="flex justify-between border-t border-stone-200 dark:border-stone-700 pt-2 font-bold text-sm">
+                    <span className="text-stone-800 dark:text-stone-200">Total a Pagar:</span>
+                    <span className="text-amber-800 dark:text-amber-400 font-black">${Number(pedidoConfirmado.total).toFixed(2)}</span>
                   </div>
                 </div>
 
@@ -744,7 +744,7 @@ export default function CatalogoPublico() {
                       setCheckoutAbierto(false);
                       setPedidoConfirmado(null);
                     }}
-                    className="w-full py-2.5 px-4 rounded-xl border border-stone-300 text-stone-700 hover:bg-stone-50 text-xs font-semibold transition-colors"
+                    className="w-full py-2.5 px-4 rounded-xl border border-stone-300 dark:border-stone-700 text-stone-700 dark:text-stone-300 hover:bg-stone-50 dark:hover:bg-stone-800 text-xs font-semibold transition-colors"
                   >
                     Seguir explorando el catálogo
                   </button>
@@ -754,17 +754,17 @@ export default function CatalogoPublico() {
               /* Formulario de Checkout Express sin registro */
               <div>
                 <div className="mb-6">
-                  <span className="text-[11px] font-bold text-amber-800 uppercase tracking-wider block mb-1">
+                  <span className="text-[11px] font-bold text-amber-800 dark:text-amber-400 uppercase tracking-wider block mb-1">
                     Checkout Express
                   </span>
-                  <h3 className="text-xl font-black text-stone-900">Completa tus datos de entrega</h3>
-                  <p className="text-xs text-stone-500 mt-1">
+                  <h3 className="text-xl font-black text-stone-900 dark:text-stone-50">Completa tus datos de entrega</h3>
+                  <p className="text-xs text-stone-500 dark:text-stone-400 mt-1">
                     No necesitas registrarte. Solo necesitamos tu contacto para coordinar la entrega.
                   </p>
                 </div>
 
                 {erroresCheckout.general && (
-                  <div className="mb-4 p-3 rounded-xl bg-rose-50 border border-rose-200 text-rose-800 text-xs flex items-center gap-2">
+                  <div className="mb-4 p-3 rounded-xl bg-rose-50 dark:bg-rose-950/40 border border-rose-200 dark:border-rose-800/60 text-rose-800 dark:text-rose-200 text-xs flex items-center gap-2">
                     <AlertCircle className="w-4 h-4 shrink-0" />
                     <span>{erroresCheckout.general}</span>
                   </div>
@@ -773,7 +773,7 @@ export default function CatalogoPublico() {
                 <form onSubmit={manejarConfirmarPedido} className="space-y-4">
                   {/* Nombre completo */}
                   <div>
-                    <label className="block text-xs font-bold text-stone-700 mb-1">
+                    <label className="block text-xs font-bold text-stone-700 dark:text-stone-300 mb-1">
                       Nombre y Apellido *
                     </label>
                     <input
@@ -781,16 +781,16 @@ export default function CatalogoPublico() {
                       placeholder="Ej. María Hernández"
                       value={clienteNombre}
                       onChange={(e) => setClienteNombre(e.target.value)}
-                      className="w-full px-3.5 py-2.5 rounded-xl border border-stone-300 text-xs focus:ring-2 focus:ring-amber-500/20 focus:border-amber-600 outline-hidden"
+                      className="w-full px-3.5 py-2.5 rounded-xl border border-stone-300 dark:border-stone-700 bg-white dark:bg-stone-800 text-stone-900 dark:text-stone-100 placeholder-stone-400 text-xs focus:ring-2 focus:ring-amber-500/20 focus:border-amber-600 outline-hidden"
                     />
                     {erroresCheckout.nombre && (
-                      <p className="text-rose-600 text-[11px] mt-1">{erroresCheckout.nombre}</p>
+                      <p className="text-rose-600 dark:text-rose-400 text-[11px] mt-1">{erroresCheckout.nombre}</p>
                     )}
                   </div>
 
                   {/* Teléfono / WhatsApp */}
                   <div>
-                    <label className="block text-xs font-bold text-stone-700 mb-1">
+                    <label className="block text-xs font-bold text-stone-700 dark:text-stone-300 mb-1">
                       Teléfono / WhatsApp *
                     </label>
                     <input
@@ -798,27 +798,27 @@ export default function CatalogoPublico() {
                       placeholder="Ej. 7890-1234"
                       value={clienteTelefono}
                       onChange={(e) => setClienteTelefono(e.target.value)}
-                      className="w-full px-3.5 py-2.5 rounded-xl border border-stone-300 text-xs focus:ring-2 focus:ring-amber-500/20 focus:border-amber-600 outline-hidden"
+                      className="w-full px-3.5 py-2.5 rounded-xl border border-stone-300 dark:border-stone-700 bg-white dark:bg-stone-800 text-stone-900 dark:text-stone-100 placeholder-stone-400 text-xs focus:ring-2 focus:ring-amber-500/20 focus:border-amber-600 outline-hidden"
                     />
                     {erroresCheckout.telefono && (
-                      <p className="text-rose-600 text-[11px] mt-1">{erroresCheckout.telefono}</p>
+                      <p className="text-rose-600 dark:text-rose-400 text-[11px] mt-1">{erroresCheckout.telefono}</p>
                     )}
                   </div>
 
                   {/* Resumen del Pedido */}
-                  <div className="bg-stone-50 rounded-xl p-4 border border-stone-200 text-xs space-y-1.5 mt-4">
-                    <span className="font-bold text-stone-800 block mb-2">Resumen ({totalArticulos} artículos)</span>
+                  <div className="bg-stone-50 dark:bg-stone-800/60 rounded-xl p-4 border border-stone-200 dark:border-stone-700 text-xs space-y-1.5 mt-4">
+                    <span className="font-bold text-stone-800 dark:text-stone-200 block mb-2">Resumen ({totalArticulos} artículos)</span>
                     {itemsCarrito.map((it) => (
-                      <div key={it.producto.id} className="flex justify-between text-stone-600">
+                      <div key={it.producto.id} className="flex justify-between text-stone-600 dark:text-stone-400">
                         <span>
                           {it.cantidad}x {it.producto.nombre}
                         </span>
                         <span>${(Number(it.producto.precio) * it.cantidad).toFixed(2)}</span>
                       </div>
                     ))}
-                    <div className="border-t border-stone-200 pt-2 flex justify-between font-black text-sm text-stone-900">
+                    <div className="border-t border-stone-200 dark:border-stone-700 pt-2 flex justify-between font-black text-sm text-stone-900 dark:text-stone-100">
                       <span>Total final</span>
-                      <span className="text-amber-800">${totalPrecio.toFixed(2)}</span>
+                      <span className="text-amber-800 dark:text-amber-400">${totalPrecio.toFixed(2)}</span>
                     </div>
                   </div>
 

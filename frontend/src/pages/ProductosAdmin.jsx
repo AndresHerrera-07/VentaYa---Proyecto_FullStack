@@ -150,9 +150,16 @@ export default function ProductosAdmin() {
     if (isNaN(numPrecio) || numPrecio <= 0) {
       err.precio = 'El precio debe ser un número mayor a 0';
     }
-    const numStock = parseInt(formulario.stock, 10);
-    if (isNaN(numStock) || numStock < 0) {
-      err.stock = 'El stock debe ser un número entero mayor o igual a 0';
+    // El stock ahora es opcional. Si se envía algo, debe ser un número entero >= 0
+    const stockStr =
+      formulario.stock !== undefined && formulario.stock !== null
+        ? formulario.stock.toString().trim()
+        : '';
+    if (stockStr !== '') {
+      const numStock = parseInt(stockStr, 10);
+      if (isNaN(numStock) || numStock < 0) {
+        err.stock = 'El stock debe ser un número entero mayor o igual a 0';
+      }
     }
     setErroresForm(err);
     return Object.keys(err).length === 0;
@@ -171,11 +178,18 @@ export default function ProductosAdmin() {
 
       const metodo = modoEdicion ? 'PUT' : 'POST';
 
+      // Si el stock está vacío, asignar 0 por defecto
+      const stockStr =
+        formulario.stock !== undefined && formulario.stock !== null
+          ? formulario.stock.toString().trim()
+          : '';
+      const stockFinal = stockStr === '' ? 0 : parseInt(stockStr, 10);
+
       const payload = {
         nombre: formulario.nombre.trim(),
         descripcion: formulario.descripcion.trim() || null,
         precio: parseFloat(formulario.precio),
-        stock: parseInt(formulario.stock, 10),
+        stock: stockFinal,
         categoria: formulario.categoria.trim() || null,
         imagenUrl: formulario.imagenUrl.trim() || null
       };
@@ -295,10 +309,10 @@ export default function ProductosAdmin() {
       {/* Encabezado del Panel */}
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-8">
         <div>
-          <h1 className="text-2xl sm:text-3xl font-extrabold text-stone-900 tracking-tight">
+          <h1 className="text-2xl sm:text-3xl font-extrabold text-stone-900 dark:text-stone-50 tracking-tight">
             Gestión de Productos
           </h1>
-          <p className="text-xs sm:text-sm text-stone-500 mt-1">
+          <p className="text-xs sm:text-sm text-stone-500 dark:text-stone-400 mt-1">
             Administra los precios, fotografías y existencias de tu comercio local.
           </p>
         </div>
@@ -314,23 +328,23 @@ export default function ProductosAdmin() {
 
       {/* Tarjetas de Métricas Rápidas */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-8">
-        <div className="bg-white rounded-2xl p-5 border border-stone-200">
-          <span className="text-xs text-stone-500 font-medium block">Total en Catálogo</span>
-          <span className="text-2xl font-black text-stone-900 mt-1 block">{productos.length}</span>
+        <div className="bg-white dark:bg-stone-900 rounded-2xl p-5 border border-stone-200 dark:border-stone-800 shadow-xs">
+          <span className="text-xs text-stone-500 dark:text-stone-400 font-medium block">Total en Catálogo</span>
+          <span className="text-2xl font-black text-stone-900 dark:text-stone-50 mt-1 block">{productos.length}</span>
         </div>
-        <div className="bg-white rounded-2xl p-5 border border-stone-200">
-          <span className="text-xs text-stone-500 font-medium block">Visibles al Público</span>
-          <span className="text-2xl font-black text-emerald-700 mt-1 block">{totalActivos}</span>
+        <div className="bg-white dark:bg-stone-900 rounded-2xl p-5 border border-stone-200 dark:border-stone-800 shadow-xs">
+          <span className="text-xs text-stone-500 dark:text-stone-400 font-medium block">Visibles al Público</span>
+          <span className="text-2xl font-black text-emerald-700 dark:text-emerald-400 mt-1 block">{totalActivos}</span>
         </div>
-        <div className="bg-white rounded-2xl p-5 border border-stone-200">
-          <span className="text-xs text-stone-500 font-medium block">Sin Existencias (Agotados)</span>
-          <span className="text-2xl font-black text-amber-700 mt-1 block">{totalAgotados}</span>
+        <div className="bg-white dark:bg-stone-900 rounded-2xl p-5 border border-stone-200 dark:border-stone-800 shadow-xs">
+          <span className="text-xs text-stone-500 dark:text-stone-400 font-medium block">Sin Existencias (Agotados)</span>
+          <span className="text-2xl font-black text-amber-700 dark:text-amber-400 mt-1 block">{totalAgotados}</span>
         </div>
       </div>
 
       {/* Buscador dentro de la tabla */}
-      <div className="bg-white rounded-2xl border border-stone-200 overflow-hidden shadow-xs">
-        <div className="p-4 border-b border-stone-200 flex items-center justify-between gap-4 bg-stone-50/50">
+      <div className="bg-white dark:bg-stone-900 rounded-2xl border border-stone-200 dark:border-stone-800 overflow-hidden shadow-xs">
+        <div className="p-4 border-b border-stone-200 dark:border-stone-800 flex items-center justify-between gap-4 bg-stone-50/50 dark:bg-stone-800/40">
           <div className="relative flex-1 max-w-sm">
             <Search className="w-4 h-4 text-stone-400 absolute left-3 top-1/2 -translate-y-1/2" />
             <input
@@ -338,18 +352,18 @@ export default function ProductosAdmin() {
               placeholder="Filtrar por nombre o categoría..."
               value={busqueda}
               onChange={(e) => setBusqueda(e.target.value)}
-              className="w-full pl-9 pr-3 py-1.5 text-xs rounded-lg border border-stone-200 bg-white focus:outline-hidden focus:border-amber-600"
+              className="w-full pl-9 pr-3 py-1.5 text-xs rounded-lg border border-stone-200 dark:border-stone-700 bg-white dark:bg-stone-800 text-stone-900 dark:text-stone-100 placeholder-stone-400 focus:outline-hidden focus:border-amber-600"
             />
           </div>
-          <span className="text-xs text-stone-500 hidden sm:block">
+          <span className="text-xs text-stone-500 dark:text-stone-400 hidden sm:block">
             {productosFiltrados.length} registros
           </span>
         </div>
 
         {/* Tabla Responsiva de Productos */}
         <div className="overflow-x-auto">
-          <table className="w-full text-left text-xs text-stone-700">
-            <thead className="bg-stone-100/70 text-stone-600 uppercase text-[10px] font-semibold tracking-wider">
+          <table className="w-full text-left text-xs text-stone-700 dark:text-stone-300">
+            <thead className="bg-stone-100/70 dark:bg-stone-800 text-stone-600 dark:text-stone-300 uppercase text-[10px] font-semibold tracking-wider">
               <tr>
                 <th className="px-5 py-3">Producto</th>
                 <th className="px-5 py-3">Categoría</th>
@@ -359,7 +373,7 @@ export default function ProductosAdmin() {
                 <th className="px-5 py-3 text-right">Acciones</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-stone-100">
+            <tbody className="divide-y divide-stone-100 dark:divide-stone-800">
               {cargando ? (
                 <tr>
                   <td colSpan="6" className="text-center py-8 text-stone-400">
@@ -374,7 +388,7 @@ export default function ProductosAdmin() {
                 </tr>
               ) : (
                 productosFiltrados.map((prod) => (
-                  <tr key={prod.id} className="hover:bg-stone-50/80 transition-colors">
+                  <tr key={prod.id} className="hover:bg-stone-50/80 dark:hover:bg-stone-800/50 transition-colors">
                     {/* Nombre y Miniatura */}
                     <td className="px-5 py-3.5">
                       <div className="flex items-center gap-3">
@@ -382,16 +396,16 @@ export default function ProductosAdmin() {
                           <img
                             src={prod.imagenUrl}
                             alt={prod.nombre}
-                            className="w-10 h-10 rounded-lg object-cover border border-stone-200"
+                            className="w-10 h-10 rounded-lg object-cover border border-stone-200 dark:border-stone-700"
                           />
                         ) : (
-                          <div className="w-10 h-10 rounded-lg bg-stone-100 flex items-center justify-center text-stone-400">
+                          <div className="w-10 h-10 rounded-lg bg-stone-100 dark:bg-stone-800 flex items-center justify-center text-stone-400">
                             <Package className="w-5 h-5" />
                           </div>
                         )}
                         <div>
-                          <span className="font-semibold text-stone-900 block">{prod.nombre}</span>
-                          <span className="text-[11px] text-stone-600 line-clamp-1 max-w-xs">
+                          <span className="font-semibold text-stone-900 dark:text-stone-100 block">{prod.nombre}</span>
+                          <span className="text-[11px] text-stone-600 dark:text-stone-400 line-clamp-1 max-w-xs">
                             {prod.descripcion || 'Sin descripción'}
                           </span>
                         </div>
@@ -400,35 +414,35 @@ export default function ProductosAdmin() {
 
                     {/* Categoría */}
                     <td className="px-5 py-3.5">
-                      <span className="inline-block px-2 py-0.5 rounded-md bg-stone-100 text-stone-700 text-[11px]">
+                      <span className="inline-block px-2 py-0.5 rounded-md bg-stone-100 dark:bg-stone-800 text-stone-700 dark:text-stone-300 text-[11px]">
                         {prod.categoria || 'General'}
                       </span>
                     </td>
 
                     {/* Precio */}
-                    <td className="px-5 py-3.5 font-bold text-stone-900">
+                    <td className="px-5 py-3.5 font-bold text-stone-900 dark:text-stone-100">
                       ${Number(prod.precio).toFixed(2)}
                     </td>
 
                     {/* Stock */}
                     <td className="px-5 py-3.5">
                       {prod.stock === 0 ? (
-                        <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-rose-700">
+                        <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-rose-700 dark:text-rose-400">
                           <AlertTriangle className="w-3.5 h-3.5" /> 0 unidades
                         </span>
                       ) : (
-                        <span className="text-stone-800 font-medium">{prod.stock} unidades</span>
+                        <span className="text-stone-800 dark:text-stone-200 font-medium">{prod.stock} unidades</span>
                       )}
                     </td>
 
                     {/* Estado Activo / Inactivo */}
                     <td className="px-5 py-3.5">
                       {prod.activo === 1 ? (
-                        <span className="inline-flex items-center gap-1 text-[11px] font-medium text-emerald-800 bg-emerald-50 px-2 py-0.5 rounded-md border border-emerald-200">
-                          <CheckCircle2 className="w-3 h-3 text-emerald-600" /> Activo
+                        <span className="inline-flex items-center gap-1 text-[11px] font-medium text-emerald-800 dark:text-emerald-300 bg-emerald-50 dark:bg-emerald-950/40 px-2 py-0.5 rounded-md border border-emerald-200 dark:border-emerald-800/60">
+                          <CheckCircle2 className="w-3 h-3 text-emerald-600 dark:text-emerald-400" /> Activo
                         </span>
                       ) : (
-                        <span className="inline-flex items-center gap-1 text-[11px] font-medium text-stone-500 bg-stone-100 px-2 py-0.5 rounded-md">
+                        <span className="inline-flex items-center gap-1 text-[11px] font-medium text-stone-500 dark:text-stone-400 bg-stone-100 dark:bg-stone-800 px-2 py-0.5 rounded-md">
                           <XCircle className="w-3 h-3 text-stone-400" /> Desactivado
                         </span>
                       )}
@@ -440,7 +454,7 @@ export default function ProductosAdmin() {
                         <button
                           onClick={() => abrirModalEditar(prod)}
                           title="Editar producto"
-                          className="p-1.5 rounded-lg text-stone-600 hover:text-stone-900 hover:bg-stone-100 transition-colors"
+                          className="p-1.5 rounded-lg text-stone-600 dark:text-stone-400 hover:text-stone-900 dark:hover:text-stone-100 hover:bg-stone-100 dark:hover:bg-stone-800 transition-colors"
                         >
                           <Pencil className="w-4 h-4" />
                         </button>
@@ -449,7 +463,7 @@ export default function ProductosAdmin() {
                           <button
                             onClick={() => manejarDesactivar(prod.id, prod.nombre)}
                             title="Desactivar del catálogo"
-                            className="p-1.5 rounded-lg text-rose-600 hover:text-rose-700 hover:bg-rose-50 transition-colors"
+                            className="p-1.5 rounded-lg text-rose-600 dark:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-950/40 transition-colors"
                           >
                             <Trash2 className="w-4 h-4" />
                           </button>
@@ -457,7 +471,7 @@ export default function ProductosAdmin() {
                           <button
                             onClick={() => manejarReactivar(prod.id)}
                             title="Reactivar producto"
-                            className="text-[11px] font-semibold text-emerald-700 hover:underline px-1"
+                            className="text-[11px] font-semibold text-emerald-700 dark:text-emerald-400 hover:underline px-1"
                           >
                             Reactivar
                           </button>
@@ -474,22 +488,22 @@ export default function ProductosAdmin() {
 
       {/* Modal para Crear / Editar Producto */}
       {modalAbierto && (
-        <div className="fixed inset-0 z-50 bg-stone-900/40 backdrop-blur-xs flex items-center justify-center p-4">
-          <div className="bg-white rounded-2xl border border-stone-200 max-w-lg w-full p-6 shadow-xl animate-in zoom-in-95">
-            <div className="flex items-center justify-between pb-4 border-b border-stone-100 mb-5">
-              <h2 className="text-lg font-bold text-stone-900">
+        <div className="fixed inset-0 z-50 bg-stone-900/60 dark:bg-black/75 backdrop-blur-xs flex items-center justify-center p-4">
+          <div className="bg-white dark:bg-stone-900 rounded-2xl border border-stone-200 dark:border-stone-800 max-w-lg w-full p-6 shadow-xl animate-in zoom-in-95">
+            <div className="flex items-center justify-between pb-4 border-b border-stone-100 dark:border-stone-800 mb-5">
+              <h2 className="text-lg font-bold text-stone-900 dark:text-stone-100">
                 {modoEdicion ? 'Editar Producto' : 'Nuevo Producto para el Catálogo'}
               </h2>
               <button
                 onClick={() => setModalAbierto(false)}
-                className="text-stone-400 hover:text-stone-600"
+                className="text-stone-400 hover:text-stone-600 dark:hover:text-stone-200"
               >
                 <X className="w-5 h-5" />
               </button>
             </div>
 
             {erroresForm.general && (
-              <div className="mb-4 p-3 rounded-lg bg-rose-50 border border-rose-200 text-rose-800 text-xs">
+              <div className="mb-4 p-3 rounded-lg bg-rose-50 dark:bg-rose-950/40 border border-rose-200 dark:border-rose-800/60 text-rose-800 dark:text-rose-200 text-xs">
                 {erroresForm.general}
               </div>
             )}
@@ -497,7 +511,7 @@ export default function ProductosAdmin() {
             <form onSubmit={manejarGuardar} className="space-y-4">
               {/* Nombre */}
               <div>
-                <label className="block text-xs font-semibold text-stone-700 mb-1">
+                <label className="block text-xs font-semibold text-stone-700 dark:text-stone-300 mb-1">
                   Nombre del producto *
                 </label>
                 <input
@@ -505,29 +519,29 @@ export default function ProductosAdmin() {
                   placeholder="Ej. Pupusas Revueltas"
                   value={formulario.nombre}
                   onChange={(e) => setFormulario({ ...formulario, nombre: e.target.value })}
-                  className="w-full px-3 py-2 rounded-xl border border-stone-300 text-xs focus:ring-2 focus:ring-amber-500/20 focus:border-amber-600 outline-hidden"
+                  className="w-full px-3 py-2 rounded-xl border border-stone-300 dark:border-stone-700 bg-white dark:bg-stone-800 text-stone-900 dark:text-stone-100 placeholder-stone-400 text-xs focus:ring-2 focus:ring-amber-500/20 focus:border-amber-600 outline-hidden"
                 />
                 {erroresForm.nombre && (
-                  <p className="text-rose-600 text-[11px] mt-0.5">{erroresForm.nombre}</p>
+                  <p className="text-rose-600 dark:text-rose-400 text-[11px] mt-0.5">{erroresForm.nombre}</p>
                 )}
               </div>
 
               {/* Categoría */}
               <div>
-                <label className="block text-xs font-semibold text-stone-700 mb-1">Categoría</label>
+                <label className="block text-xs font-semibold text-stone-700 dark:text-stone-300 mb-1">Categoría</label>
                 <input
                   type="text"
                   placeholder="Ej. Comida Típica, Bebidas, Panadería..."
                   value={formulario.categoria}
                   onChange={(e) => setFormulario({ ...formulario, categoria: e.target.value })}
-                  className="w-full px-3 py-2 rounded-xl border border-stone-300 text-xs focus:ring-2 focus:ring-amber-500/20 focus:border-amber-600 outline-hidden"
+                  className="w-full px-3 py-2 rounded-xl border border-stone-300 dark:border-stone-700 bg-white dark:bg-stone-800 text-stone-900 dark:text-stone-100 placeholder-stone-400 text-xs focus:ring-2 focus:ring-amber-500/20 focus:border-amber-600 outline-hidden"
                 />
               </div>
 
               {/* Precio y Stock en 2 columnas */}
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-xs font-semibold text-stone-700 mb-1">
+                  <label className="block text-xs font-semibold text-stone-700 dark:text-stone-300 mb-1">
                     Precio ($ USD) *
                   </label>
                   <input
@@ -537,28 +551,28 @@ export default function ProductosAdmin() {
                     placeholder="3.00"
                     value={formulario.precio}
                     onChange={(e) => setFormulario({ ...formulario, precio: e.target.value })}
-                    className="w-full px-3 py-2 rounded-xl border border-stone-300 text-xs focus:ring-2 focus:ring-amber-500/20 focus:border-amber-600 outline-hidden"
+                    className="w-full px-3 py-2 rounded-xl border border-stone-300 dark:border-stone-700 bg-white dark:bg-stone-800 text-stone-900 dark:text-stone-100 placeholder-stone-400 text-xs focus:ring-2 focus:ring-amber-500/20 focus:border-amber-600 outline-hidden"
                   />
                   {erroresForm.precio && (
-                    <p className="text-rose-600 text-[11px] mt-0.5">{erroresForm.precio}</p>
+                    <p className="text-rose-600 dark:text-rose-400 text-[11px] mt-0.5">{erroresForm.precio}</p>
                   )}
                 </div>
 
                 <div>
-                  <label className="block text-xs font-semibold text-stone-700 mb-1">
-                    Existencias (Stock) *
+                  <label className="block text-xs font-semibold text-stone-700 dark:text-stone-300 mb-1">
+                    Existencias (Stock) <span className="text-stone-400 dark:text-stone-500 font-normal">(Opcional)</span>
                   </label>
                   <input
                     type="number"
                     step="1"
                     min="0"
-                    placeholder="50"
+                    placeholder="0"
                     value={formulario.stock}
                     onChange={(e) => setFormulario({ ...formulario, stock: e.target.value })}
-                    className="w-full px-3 py-2 rounded-xl border border-stone-300 text-xs focus:ring-2 focus:ring-amber-500/20 focus:border-amber-600 outline-hidden"
+                    className="w-full px-3 py-2 rounded-xl border border-stone-300 dark:border-stone-700 bg-white dark:bg-stone-800 text-stone-900 dark:text-stone-100 placeholder-stone-400 text-xs focus:ring-2 focus:ring-amber-500/20 focus:border-amber-600 outline-hidden"
                   />
                   {erroresForm.stock && (
-                    <p className="text-rose-600 text-[11px] mt-0.5">{erroresForm.stock}</p>
+                    <p className="text-rose-600 dark:text-rose-400 text-[11px] mt-0.5">{erroresForm.stock}</p>
                   )}
                 </div>
               </div>
@@ -566,17 +580,17 @@ export default function ProductosAdmin() {
               {/* Fotografía del Producto (Local o Enlace Web) */}
               <div>
                 <div className="flex items-center justify-between mb-1.5">
-                  <label className="block text-xs font-semibold text-stone-700">
+                  <label className="block text-xs font-semibold text-stone-700 dark:text-stone-300">
                     Fotografía del producto
                   </label>
-                  <div className="flex items-center gap-1 bg-stone-100 p-0.5 rounded-lg text-[11px]">
+                  <div className="flex items-center gap-1 bg-stone-100 dark:bg-stone-800 p-0.5 rounded-lg text-[11px]">
                     <button
                       type="button"
                       onClick={() => setTipoImagen('archivo')}
                       className={`px-2 py-0.5 rounded-md transition-colors ${
                         tipoImagen === 'archivo'
-                          ? 'bg-white font-semibold text-stone-900 shadow-xs'
-                          : 'text-stone-500 hover:text-stone-800'
+                          ? 'bg-white dark:bg-stone-700 font-semibold text-stone-900 dark:text-stone-100 shadow-xs'
+                          : 'text-stone-500 dark:text-stone-400 hover:text-stone-800 dark:hover:text-stone-200'
                       }`}
                     >
                       Subir archivo
@@ -586,8 +600,8 @@ export default function ProductosAdmin() {
                       onClick={() => setTipoImagen('url')}
                       className={`px-2 py-0.5 rounded-md transition-colors ${
                         tipoImagen === 'url'
-                          ? 'bg-white font-semibold text-stone-900 shadow-xs'
-                          : 'text-stone-500 hover:text-stone-800'
+                          ? 'bg-white dark:bg-stone-700 font-semibold text-stone-900 dark:text-stone-100 shadow-xs'
+                          : 'text-stone-500 dark:text-stone-400 hover:text-stone-800 dark:hover:text-stone-200'
                       }`}
                     >
                       Enlace URL
@@ -606,31 +620,31 @@ export default function ProductosAdmin() {
                     />
                     <div
                       onClick={() => refInputArchivo.current?.click()}
-                      className="border-2 border-dashed border-stone-300 hover:border-amber-600 rounded-xl p-4 text-center cursor-pointer bg-stone-50/50 hover:bg-amber-50/20 transition-colors"
+                      className="border-2 border-dashed border-stone-300 dark:border-stone-700 hover:border-amber-600 rounded-xl p-4 text-center cursor-pointer bg-stone-50/50 dark:bg-stone-800/30 hover:bg-amber-50/20 transition-colors"
                     >
                       {formulario.imagenUrl ? (
                         <div className="flex items-center justify-center gap-3">
                           <img
                             src={formulario.imagenUrl}
                             alt="Vista previa"
-                            className="w-14 h-14 object-cover rounded-lg border border-stone-200 shadow-xs"
+                            className="w-14 h-14 object-cover rounded-lg border border-stone-200 dark:border-stone-700 shadow-xs"
                           />
                           <div className="text-left">
-                            <span className="text-xs font-semibold text-stone-900 block">
+                            <span className="text-xs font-semibold text-stone-900 dark:text-stone-100 block">
                               Imagen seleccionada
                             </span>
-                            <span className="text-[11px] text-stone-500 block">
+                            <span className="text-[11px] text-stone-500 dark:text-stone-400 block">
                               Haz clic para cambiarla
                             </span>
                           </div>
                         </div>
                       ) : (
-                        <div className="flex flex-col items-center justify-center text-stone-500">
-                          <Upload className="w-6 h-6 text-amber-700 mb-1" />
-                          <span className="text-xs font-semibold text-stone-800">
+                        <div className="flex flex-col items-center justify-center text-stone-500 dark:text-stone-400">
+                          <Upload className="w-6 h-6 text-amber-700 dark:text-amber-500 mb-1" />
+                          <span className="text-xs font-semibold text-stone-800 dark:text-stone-200">
                             Haz clic para elegir una foto de tu computadora
                           </span>
-                          <span className="text-[11px] text-stone-400 mt-0.5">
+                          <span className="text-[11px] text-stone-400 dark:text-stone-500 mt-0.5">
                             PNG, JPG o WEBP (se optimiza automáticamente)
                           </span>
                         </div>
@@ -644,7 +658,7 @@ export default function ProductosAdmin() {
                       placeholder="https://images.unsplash.com/... o /productos/foto.jpg"
                       value={formulario.imagenUrl}
                       onChange={(e) => setFormulario({ ...formulario, imagenUrl: e.target.value })}
-                      className="w-full px-3 py-2 rounded-xl border border-stone-300 text-xs focus:ring-2 focus:ring-amber-500/20 focus:border-amber-600 outline-hidden"
+                      className="w-full px-3 py-2 rounded-xl border border-stone-300 dark:border-stone-700 bg-white dark:bg-stone-800 text-stone-900 dark:text-stone-100 placeholder-stone-400 text-xs focus:ring-2 focus:ring-amber-500/20 focus:border-amber-600 outline-hidden"
                     />
                   </div>
                 )}

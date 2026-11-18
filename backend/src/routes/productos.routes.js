@@ -100,7 +100,7 @@ router.post('/', validarSchema(crearProductoSchema), async (req, res, next) => {
         nombre,
         descripcion || null,
         precio,
-        stock,
+        stock !== undefined && stock !== null ? stock : 0,
         imagenUrl || null,
         categoria || null
       ]

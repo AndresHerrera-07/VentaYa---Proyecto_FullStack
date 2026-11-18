@@ -253,3 +253,32 @@ Content-Type: application/json
   "passwordActual": "admin123",
   "passwordNuevo": "admin456"
 }
+
+### 33. Dueño actualiza su correo electrónico de acceso
+PUT {{baseUrl}}/auth/perfil
+Authorization: Bearer {{loginDueno.response.body.datos.token}}
+Content-Type: application/json
+
+{
+  "correo": "carmen.ortiz@antojitos.sv"
+}
+
+### 34. Dueño actualiza el título o nombre comercial de su negocio
+PUT {{baseUrl}}/auth/negocio
+Authorization: Bearer {{loginDueno.response.body.datos.token}}
+Content-Type: application/json
+
+{
+  "nombre": "Antojitos Típicos y Pupusería Santa Tecla"
+}
+
+### 35. Registrar un nuevo producto sin especificar existencias (stock opcional por defecto 0)
+POST {{baseUrl}}/productos
+Content-Type: application/json
+
+{
+  "nombre": "Atol de Elote Artesanal",
+  "descripcion": "Delicioso atol de elote recién preparado con canela en polvo.",
+  "precio": 1.75,
+  "categoria": "Bebidas"
+}
