@@ -234,28 +234,35 @@ export default function ProductosAdmin() {
     }
   };
 
-  // Desactivar producto (Borrado Lógico)
-  const manejarDesactivar = async (id, nombre) => {
-    if (!confirm(`¿Estás seguro de desactivar el producto "${nombre}" de tu catálogo público?`)) {
+  // Desactivar o remover producto de la vista del cliente
+  const manejarEliminarTotal = async (id, nombre) => {
+    if (
+      !confirm(
+        `¿Estás seguro de remover totalmente el producto "${nombre}"?\n\nEsta acción lo retirará por completo de la vista de todos los clientes.`
+      )
+    ) {
       return;
     }
 
     try {
-      const res = await fetch(`${API_BASE}/productos/${id}`, {
+      const res = await fetch(`${API_BASE}/productos/${id}?permanente=true&forzar=true`, {
         method: 'DELETE',
         headers: token ? { Authorization: `Bearer ${token}` } : {}
       });
 
+      const data = await res.json();
       if (res.ok) {
         setMensajeAlerta({
           tipo: 'exito',
-          texto: `El producto "${nombre}" fue desactivado.`
+          texto: data.mensaje || `El producto "${nombre}" fue removido totalmente de la vista del cliente.`
         });
         setTimeout(() => setMensajeAlerta(null), 4000);
         cargarProductos();
+      } else {
+        alert(data.mensaje || 'Error al eliminar el producto');
       }
     } catch (err) {
-      console.error('Error al desactivar:', err);
+      console.error('Error al remover producto:', err);
     }
   };
 
@@ -450,7 +457,7 @@ export default function ProductosAdmin() {
 
                     {/* Acciones */}
                     <td className="px-5 py-3.5 text-right">
-                      <div className="flex items-center justify-end gap-1">
+                      <div className="flex items-center justify-end gap-1.5">
                         <button
                           onClick={() => abrirModalEditar(prod)}
                           title="Editar producto"
@@ -461,20 +468,29 @@ export default function ProductosAdmin() {
 
                         {prod.activo === 1 ? (
                           <button
-                            onClick={() => manejarDesactivar(prod.id, prod.nombre)}
-                            title="Desactivar del catálogo"
+                            onClick={() => manejarEliminarTotal(prod.id, prod.nombre)}
+                            title="Remover totalmente de la vista del cliente"
                             className="p-1.5 rounded-lg text-rose-600 dark:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-950/40 transition-colors"
                           >
                             <Trash2 className="w-4 h-4" />
                           </button>
                         ) : (
-                          <button
-                            onClick={() => manejarReactivar(prod.id)}
-                            title="Reactivar producto"
-                            className="text-[11px] font-semibold text-emerald-700 dark:text-emerald-400 hover:underline px-1"
-                          >
-                            Reactivar
-                          </button>
+                          <div className="flex items-center gap-1">
+                            <button
+                              onClick={() => manejarReactivar(prod.id)}
+                              title="Reactivar producto"
+                              className="text-[11px] font-semibold text-emerald-700 dark:text-emerald-400 hover:underline px-1"
+                            >
+                              Reactivar
+                            </button>
+                            <button
+                              onClick={() => manejarEliminarTotal(prod.id, prod.nombre)}
+                              title="Eliminar definitivamente de la base de datos"
+                              className="p-1.5 rounded-lg text-rose-600 dark:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-950/40 transition-colors"
+                            >
+                              <Trash2 className="w-4 h-4" />
+                            </button>
+                          </div>
                         )}
                       </div>
                     </td>

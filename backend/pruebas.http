@@ -282,3 +282,20 @@ Content-Type: application/json
   "precio": 1.75,
   "categoria": "Bebidas"
 }
+
+### 36. Dueño actualiza dirección, WhatsApp y foto/logo del negocio
+PUT {{baseUrl}}/auth/negocio
+Authorization: Bearer {{loginDueno.response.body.datos.token}}
+Content-Type: application/json
+
+{
+  "nombre": "Antojitos Típicos Santa Tecla",
+  "direccion": "Avenida Manuel Gallardo #3-4, Santa Tecla, La Libertad",
+  "telefono": "+503 7890-1234",
+  "logoUrl": "https://images.unsplash.com/photo-1554118811-1e0d58224f24?w=400"
+}
+
+### 37. Remover totalmente un producto de la base de datos y de la vista del cliente
+DELETE {{baseUrl}}/productos/19?permanente=true&forzar=true
+Authorization: Bearer {{loginDueno.response.body.datos.token}}
+Accept: application/json

@@ -205,11 +205,19 @@ La plataforma cuenta con un sistema de roles integrado en la misma aplicación w
   - Alternador de tema integrado en el `Navbar` (íconos de Sol y Luna con `lucide-react`).
   - Persistencia automática de la preferencia del usuario en `localStorage` (`vendeya_tema_v1`).
   - Soporte global de Tailwind v4 con `@custom-variant dark` y paleta de colores de alto contraste (`#0c0a09` / `#f5f5f4`) en todas las pantallas.
-- **🏷️ Título del Negocio y Correo Editables:**
-  - Endpoint `PUT /api/auth/negocio` para que el dueño actualice el nombre de su negocio en cualquier momento.
-  - Endpoint `PUT /api/auth/perfil` con validación Zod de formato y comprobación de correo único.
-- **📦 Stock Opcional:**
+- **🏷️ Personalización Comercial del Negocio (Foto, Dirección y WhatsApp):**
+  - Endpoint `PUT /api/auth/negocio` con soporte para actualizar `nombre`, `direccion`, `telefono` (WhatsApp) y `logoUrl`.
+  - Carga dual de logotipo del comercio: subida directa desde archivo local de la PC procesado a Base64 mediante `<canvas>` HTML5 o mediante enlace URL de internet.
+  - Columna `logo_url` adaptada a `MEDIUMTEXT` en MySQL.
+  - Número de WhatsApp editable sincronizado con los enlaces de confirmación de órdenes.
+  - Dirección física editable visible en el encabezado del catálogo público.
+- **🗑️ Remoción Total de Productos:**
+  - Endpoint `DELETE /api/productos/:id` con soporte de eliminación física permanente (`?permanente=true&forzar=true`) para productos sin pedidos y borrado forzado de prueba.
+  - Retiro garantizado del catálogo del cliente (`activo = 1` en `tiendas.routes.js`).
+  - Botón de remoción total en la tabla de productos accesible para Dueño y Vendedor.
+- **📦 Stock Opcional y Catálogo Ampliado:**
   - El inventario ahora es opcional al crear o modificar productos (valor predeterminado en `0`), ideal para servicios o productos bajo demanda.
+  - Catálogo enriquecido con 17 productos tradicionales salvadoreños (pupusas, tamales de elote y gallina, yuca frita, pastelitos, chilate con nuégados, horchata, ensalada, etc.).
 - **🔤 Tipografía Ampliada de Alto Contraste:**
   - Títulos de productos aumentados a `text-lg sm:text-xl font-black` con clases de contraste específico para garantizar lectura clara tanto en modo claro como oscuro.
 

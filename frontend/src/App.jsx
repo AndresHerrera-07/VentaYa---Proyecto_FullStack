@@ -55,10 +55,11 @@ export default function App() {
                     }
                   />
 
+                  {/* Gestión de Productos: acceso para Dueño y Vendedor */}
                   <Route
                     path="/admin/productos"
                     element={
-                      <RutaProtegida rolesPermitidos={['dueno']}>
+                      <RutaProtegida rolesPermitidos={['dueno', 'vendedor']}>
                         <ProductosAdmin />
                       </RutaProtegida>
                     }

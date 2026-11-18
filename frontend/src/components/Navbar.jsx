@@ -31,9 +31,17 @@ export default function Navbar() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between">
         {/* Logotipo principal */}
         <Link to="/" className="flex items-center gap-2.5 group">
-          <div className="w-10 h-10 rounded-xl bg-amber-700 dark:bg-amber-600 flex items-center justify-center text-white shadow-sm shadow-amber-900/10 group-hover:bg-amber-800 dark:group-hover:bg-amber-700 transition-colors">
-            <Store className="w-5 h-5" />
-          </div>
+          {usuario?.negocioLogoUrl ? (
+            <img
+              src={usuario.negocioLogoUrl}
+              alt={usuario?.negocioNombre || 'Logo'}
+              className="w-10 h-10 rounded-xl object-cover border border-stone-200 dark:border-stone-700 shadow-xs"
+            />
+          ) : (
+            <div className="w-10 h-10 rounded-xl bg-amber-700 dark:bg-amber-600 flex items-center justify-center text-white shadow-sm shadow-amber-900/10 group-hover:bg-amber-800 dark:group-hover:bg-amber-700 transition-colors">
+              <Store className="w-5 h-5" />
+            </div>
+          )}
           <div>
             <div className="flex items-center gap-1.5">
               <span className="text-xl font-bold tracking-tight text-stone-900 dark:text-stone-50">
@@ -132,6 +140,18 @@ export default function Navbar() {
               >
                 <DollarSign className="w-4 h-4" />
                 <span>Cajero / Ventas</span>
+              </Link>
+
+              <Link
+                to="/admin/productos"
+                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs sm:text-sm font-medium transition-colors ${
+                  esRutaActiva('/admin/productos')
+                    ? 'bg-stone-900 dark:bg-stone-800 text-white'
+                    : 'text-stone-600 dark:text-stone-300 hover:text-stone-900 dark:hover:text-stone-100 hover:bg-stone-100 dark:hover:bg-stone-800'
+                }`}
+              >
+                <Package className="w-4 h-4 text-amber-500 dark:text-amber-400" />
+                <span>Productos</span>
               </Link>
 
               <Link

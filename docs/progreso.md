@@ -257,6 +257,33 @@
 - **Pendiente:**
   - Despliegue en producción en la nube (Vercel / Render).
 
+### Sesión 8 — Remoción Total de Productos, Ampliación de Catálogo, Personalización de Foto, Dirección y WhatsApp
+
+- **Fecha:** 18/11/2026
+- **Hecho:**
+  - **Remoción Total de Productos:**
+    - Actualizado endpoint `DELETE /api/productos/:id` en `backend/src/routes/productos.routes.js`: admite los parámetros `?permanente=true` y `?forzar=true`. Si el producto no tiene pedidos históricos, se elimina físicamente de la base de datos MySQL; si tiene pedidos, se eliminan referencias forzadas o se desactiva garantizando que nunca se muestre al cliente (`activo = 1` en `tiendas.routes.js`).
+    - En `ProductosAdmin.jsx`, se implementó la función `manejarEliminarTotal` con confirmación explícita para remover productos totalmente del catálogo y de la vista del cliente.
+    - Se habilitó el acceso a la gestión de productos tanto para el Dueño como para el Vendedor en `App.jsx` (`rolesPermitidos={['dueno', 'vendedor']}`) y enlace en `Navbar.jsx`.
+  - **Ampliación del Catálogo Gastronómico:**
+    - Se agregaron 12 nuevos productos típicos salvadoreños en la base de datos (17 productos en total): pupusas de queso con loroco, pupusas de frijol con queso, yuca frita con chicharrón, tamales de elote, tamales de gallina, pastelitos de carne, chilate con nuégados, plátanos fritos, quesadilla salvadoreña, horchata de morro, refresco de ensalada y atol de elote.
+    - Actualizado el script de siembra `iniciarBaseDatos.js` con el catálogo completo.
+  - **Personalización Comercial del Negocio (Foto, Dirección y WhatsApp):**
+    - Se modificó la columna `logo_url` de la tabla `negocios` a tipo `MEDIUMTEXT` en MySQL para admitir imágenes Base64 locales optimizadas.
+    - Endpoint `PUT /api/auth/negocio` y esquema `actualizarNegocioSchema` ampliados para admitir `logoUrl`, `direccion`, `telefono` y `nombre`.
+    - En `PerfilDueno.jsx` se integraron:
+      - Campo de dirección física del local (reflejada en la cabecera del catálogo público).
+      - Campo de número de WhatsApp (utilizado para generar los enlaces automáticos de confirmación de pedidos).
+      - Carga dual de logotipo: subida desde archivo local de la computadora (con compresión y redimensionado a través de `<canvas>` HTML5) o enlace URL web, con previsualización en vivo y opción de eliminar foto.
+    - Sincronización del logotipo en la barra de navegación `Navbar.jsx` para mostrar la marca del negocio.
+  - **Pruebas y Verificación:**
+    - Pruebas automatizadas ejecutadas: login, actualización de datos de negocio con dirección y WhatsApp, verificación de catálogo público y borrado permanente de productos de prueba (código 200).
+    - Compilación de producción con `pnpm run build` ejecutada con éxito (0 errores, 2643 módulos).
+
+- **Decisiones:**
+  - El vendedor ahora tiene acceso a la administración de productos para poder dar de baja artículos agotados o retirados.
+  - El borrado total permite purgar completamente productos de prueba sin dejar registros huérfanos.
+
 ## Instrucciones de actualización
 
 - Marcar una tarea como completada únicamente cuando haya sido implementada y probada.

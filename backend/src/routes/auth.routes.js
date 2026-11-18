@@ -23,7 +23,8 @@ router.post('/login', validarSchema(loginSchema), async (req, res, next) => {
     // 1. Buscar usuario por correo
     const [usuarios] = await pool.query(
       `SELECT u.id, u.negocio_id AS negocioId, u.nombre, u.correo, u.password_hash, u.rol,
-              n.nombre AS negocioNombre, n.slug AS negocioSlug
+              n.nombre AS negocioNombre, n.slug AS negocioSlug, n.telefono AS negocioTelefono,
+              n.direccion AS negocioDireccion, n.logo_url AS negocioLogoUrl
        FROM usuarios u
        INNER JOIN negocios n ON u.negocio_id = n.id
        WHERE u.correo = ?
@@ -77,7 +78,10 @@ router.post('/login', validarSchema(loginSchema), async (req, res, next) => {
           rol: usuario.rol,
           negocioId: usuario.negocioId,
           negocioNombre: usuario.negocioNombre,
-          negocioSlug: usuario.negocioSlug
+          negocioSlug: usuario.negocioSlug,
+          negocioTelefono: usuario.negocioTelefono,
+          negocioDireccion: usuario.negocioDireccion,
+          negocioLogoUrl: usuario.negocioLogoUrl
         }
       }
     });
@@ -93,7 +97,8 @@ router.get('/perfil', verificarToken, async (req, res, next) => {
   try {
     const [usuarios] = await pool.query(
       `SELECT u.id, u.negocio_id AS negocioId, u.nombre, u.correo, u.rol,
-              n.nombre AS negocioNombre, n.slug AS negocioSlug, n.telefono AS negocioTelefono
+              n.nombre AS negocioNombre, n.slug AS negocioSlug, n.telefono AS negocioTelefono,
+              n.direccion AS negocioDireccion, n.logo_url AS negocioLogoUrl
        FROM usuarios u
        INNER JOIN negocios n ON u.negocio_id = n.id
        WHERE u.id = ?
@@ -210,7 +215,7 @@ router.put(
 
 // ============================================================
 // Actualizar información del Negocio (Solo para el Dueño)
-// Permite al dueño cambiar el título / nombre de su negocio
+// Permite al dueño cambiar nombre, dirección, teléfono y logo/foto del negocio
 // ============================================================
 router.put(
   '/negocio',
@@ -219,15 +224,36 @@ router.put(
   validarSchema(actualizarNegocioSchema),
   async (req, res, next) => {
     try {
-      const { nombre } = req.body;
+      const { nombre, telefono, direccion, logoUrl } = req.body;
       const negocioId = req.usuario.negocioId;
 
-      await pool.query(
-        `UPDATE negocios
-         SET nombre = ?
-         WHERE id = ?`,
-        [nombre.trim(), negocioId]
-      );
+      const campos = [];
+      const valores = [];
+
+      if (nombre !== undefined && nombre !== null) {
+        campos.push('nombre = ?');
+        valores.push(nombre.trim());
+      }
+      if (telefono !== undefined) {
+        campos.push('telefono = ?');
+        valores.push(telefono ? telefono.trim() : null);
+      }
+      if (direccion !== undefined) {
+        campos.push('direccion = ?');
+        valores.push(direccion ? direccion.trim() : null);
+      }
+      if (logoUrl !== undefined) {
+        campos.push('logo_url = ?');
+        valores.push(logoUrl ? logoUrl.trim() : null);
+      }
+
+      if (campos.length > 0) {
+        valores.push(negocioId);
+        await pool.query(
+          `UPDATE negocios SET ${campos.join(', ')} WHERE id = ?`,
+          valores
+        );
+      }
 
       const [negocios] = await pool.query(
         `SELECT id, nombre, slug, telefono, direccion, logo_url AS logoUrl
@@ -239,7 +265,7 @@ router.put(
 
       res.status(200).json({
         ok: true,
-        mensaje: 'Nombre del negocio actualizado exitosamente',
+        mensaje: 'Información del negocio actualizada exitosamente',
         datos: negocios[0]
       });
     } catch (error) {

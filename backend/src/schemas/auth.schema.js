@@ -65,11 +65,32 @@ export const actualizarPerfilSchema = z.object({
   path: ['passwordActual']
 });
 
-// Esquema para que el dueño actualice el nombre de su negocio
+// Esquema para que el dueño actualice los datos de su negocio (nombre, dirección, teléfono, logo)
 export const actualizarNegocioSchema = z.object({
   nombre: z
-    .string({ required_error: 'El nombre del negocio es obligatorio' })
+    .string()
     .trim()
     .min(2, { message: 'El nombre del negocio debe contener al menos 2 caracteres' })
     .max(100, { message: 'El nombre del negocio no puede exceder 100 caracteres' })
+    .optional(),
+
+  telefono: z
+    .string()
+    .trim()
+    .max(30, { message: 'El teléfono no puede exceder 30 caracteres' })
+    .nullable()
+    .optional(),
+
+  direccion: z
+    .string()
+    .trim()
+    .max(255, { message: 'La dirección no puede exceder 255 caracteres' })
+    .nullable()
+    .optional(),
+
+  logoUrl: z
+    .string()
+    .trim()
+    .nullable()
+    .optional()
 });

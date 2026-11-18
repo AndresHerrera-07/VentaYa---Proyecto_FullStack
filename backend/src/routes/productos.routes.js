@@ -224,11 +224,12 @@ router.put('/:id', validarSchema(actualizarProductoSchema), async (req, res, nex
   }
 });
 
-// HU-04: Eliminación lógica del producto (activo = 0) para mantener integridad de ventas
+// HU-04: Eliminación total o lógica del producto para removerlo de la vista del cliente
 router.delete('/:id', async (req, res, next) => {
   try {
     const negocioId = OBTENER_NEGOCIO_ID(req);
     const { id } = req.params;
+    const { permanente, forzar } = req.query;
 
     const [existente] = await pool.query(
       'SELECT id, nombre, activo FROM productos WHERE id = ? AND negocio_id = ? LIMIT 1',
@@ -242,16 +243,43 @@ router.delete('/:id', async (req, res, next) => {
       });
     }
 
-    // Borrado lógico
-    await pool.query(
-      'UPDATE productos SET activo = 0 WHERE id = ? AND negocio_id = ?',
-      [id, negocioId]
+    // Verificar si el producto tiene referencias en detalles_pedido
+    const [detalles] = await pool.query(
+      'SELECT COUNT(*) AS total FROM detalles_pedido WHERE producto_id = ?',
+      [id]
     );
+    const tienePedidos = detalles[0].total > 0;
 
-    res.status(200).json({
-      ok: true,
-      mensaje: `El producto "${existente[0].nombre}" ha sido desactivado exitosamente`
-    });
+    // Si se pide permanente/forzado o si el producto no tiene ventas asociadas
+    if ((permanente === 'true' || forzar === 'true') && tienePedidos) {
+      // Eliminar detalles asociados si se forzó la purga completa
+      await pool.query('DELETE FROM detalles_pedido WHERE producto_id = ?', [id]);
+      await pool.query('DELETE FROM productos WHERE id = ? AND negocio_id = ?', [id, negocioId]);
+      return res.status(200).json({
+        ok: true,
+        eliminadoTotal: true,
+        mensaje: `El producto "${existente[0].nombre}" ha sido eliminado totalmente del sistema.`
+      });
+    } else if (!tienePedidos) {
+      // Sin pedidos históricos: eliminación física directa de la base de datos
+      await pool.query('DELETE FROM productos WHERE id = ? AND negocio_id = ?', [id, negocioId]);
+      return res.status(200).json({
+        ok: true,
+        eliminadoTotal: true,
+        mensaje: `El producto "${existente[0].nombre}" fue eliminado totalmente y retirado del catálogo.`
+      });
+    } else {
+      // Con pedidos históricos y sin forzado: borrado lógico (activo = 0) para mantener integridad
+      await pool.query(
+        'UPDATE productos SET activo = 0 WHERE id = ? AND negocio_id = ?',
+        [id, negocioId]
+      );
+      return res.status(200).json({
+        ok: true,
+        desactivado: true,
+        mensaje: `El producto "${existente[0].nombre}" fue removido totalmente de la vista del cliente.`
+      });
+    }
   } catch (error) {
     next(error);
   }
