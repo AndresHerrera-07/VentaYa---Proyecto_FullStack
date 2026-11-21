@@ -108,7 +108,7 @@ erDiagram
 ```
 
 ### Usuarios y Contraseñas Registrados en la Base de Datos
-- **👑 Dueño:** `carmen@antojitos.sv` / Contraseña: `admin123`
+- **👑 Dueño:** `testeo@antojitos.sv` / Contraseña: `admin123`
 - **🧑‍💼 Vendedor:** `vendedor@antojitos.sv` / Contraseña: `admin123`
 
 ---

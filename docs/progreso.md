@@ -284,6 +284,29 @@
   - El vendedor ahora tiene acceso a la administración de productos para poder dar de baja artículos agotados o retirados.
   - El borrado total permite purgar completamente productos de prueba sin dejar registros huérfanos.
 
+### Sesión 9 — Separación de Acceso de Clientes y Personal, Actualización de Correo y Remoción de Panel Demo
+
+- **Fecha:** 20/11/2026
+- **Hecho:**
+  - **Actualización de Correo Predeterminado:**
+    - Correo del usuario dueño modificado a `testeo@antojitos.sv` en MySQL, `iniciarBaseDatos.js`, `02-datos-demo.sql`, `pruebas.http` y en el estado inicial de `Login.jsx`.
+    - Contraseña predeterminada conservada en `admin123`.
+  - **Remoción del Panel de Acceso Rápido:**
+    - Eliminado por completo el contenedor de botones demo de un clic en `Login.jsx`.
+  - **Portal de Acceso Exclusivo para Dueño y Vendedor:**
+    - `Login.jsx` rediseñado como portal de acceso para colaboradores (`/admin/login` y `/login`), con formulario seguro de correo y contraseña con toggle de visibilidad.
+    - Validación y redirección directa por rol: `dueno` redirige a `/admin/dashboard` y `vendedor` a `/admin/cajero`.
+    - Enlace inferior explicativo con acceso directo a la tienda pública para clientes sin requerir credenciales.
+  - **Separación de la Experiencia del Cliente:**
+    - La vista de cliente (`/` y `/tienda/:slug`) queda 100% aislada de elementos administrativos, mostrando exclusivamente el catálogo, categorías, buscador, carrito y checkout directo por WhatsApp.
+    - El pie de página enlaza discretamente al portal de colaboradores en `/admin/login`.
+  - **Pruebas y Verificación:**
+    - `pnpm run build` ejecutado exitosamente con 0 errores (2643 módulos).
+    - Inicios de sesión comprobados mediante HTTP para `testeo@antojitos.sv` y `vendedor@antojitos.sv` con códigos 200 y tokens JWT generados.
+
+- **Decisiones:**
+  - Se eliminaron las opciones de demo para dotar a la plataforma de mayor realismo y seguridad operativa en producción.
+
 ## Instrucciones de actualización
 
 - Marcar una tarea como completada únicamente cuando haya sido implementada y probada.

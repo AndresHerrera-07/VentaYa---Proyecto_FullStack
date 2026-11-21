@@ -70,7 +70,7 @@ export function AuthProvider({ children }) {
 
     const credenciales =
       tipoRol === 'dueno'
-        ? { correo: 'carmen@antojitos.sv', password: 'admin123' }
+        ? { correo: 'testeo@antojitos.sv', password: 'admin123' }
         : { correo: 'vendedor@antojitos.sv', password: 'admin123' };
 
     return await iniciarSesion(credenciales.correo, credenciales.password);

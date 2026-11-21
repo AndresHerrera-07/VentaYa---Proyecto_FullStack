@@ -177,7 +177,7 @@ export async function iniciarBaseDatos(opciones = {}) {
           1,
           1,
           'Carmen Ramos',
-          'carmen@antojitos.sv',
+          'testeo@antojitos.sv',
           '$2b$10$TElQri9pSPy5h7sS6UjS4O3O0drAepmDpfsklhgbia0DeGtg3Ktr6',
           'dueno'
         )

@@ -5,9 +5,9 @@ import { ShieldAlert, ArrowLeft, LogIn } from 'lucide-react';
 export default function RutaProtegida({ children, rolesPermitidos = [] }) {
   const { autenticado, rol, usuario } = useAuth();
 
-  // Si no está autenticado, redirigir a Login
+  // Si no está autenticado, redirigir al portal de personal
   if (!autenticado) {
-    return <Navigate to="/login" replace />;
+    return <Navigate to="/admin/login" replace />;
   }
 
   // Si se especificaron roles y el rol actual no está en la lista permitida

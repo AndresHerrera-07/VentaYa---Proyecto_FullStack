@@ -37,10 +37,11 @@ export default function App() {
                   <Route path="/tienda/:slug" element={<CatalogoPublico />} />
 
                   {/*
-                    ACCESO DE EMPLEADOS — Inicio de Sesión
-                    Enlace discreto accesible desde el pie de página.
+                    ACCESO EXCLUSIVO PARA COLABORADORES (Dueño y Vendedor)
+                    Portal privado para gestión y caja. Los clientes usan la tienda pública directamente.
                   */}
                   <Route path="/login" element={<Login />} />
+                  <Route path="/admin/login" element={<Login />} />
 
                   {/*
                     DUEÑO — Acceso Total
@@ -130,12 +131,12 @@ export default function App() {
                   <p>VendeYa &copy; 2026 — Plataforma de Comercio Local para El Salvador</p>
                   <div className="flex items-center gap-4 text-stone-400 dark:text-stone-500">
                     <span>Node.js · Express 5 · MySQL · React 19 · Tailwind CSS</span>
-                    {/* Enlace de acceso para empleados (Dueño / Vendedor) — discreto en el pie */}
+                    {/* Enlace de acceso exclusivo para colaboradores (Dueño / Vendedor) */}
                     <Link
-                      to="/login"
+                      to="/admin/login"
                       className="underline underline-offset-2 hover:text-stone-700 dark:hover:text-stone-200 transition-colors"
                     >
-                      Acceso Personal
+                      Acceso Colaboradores (Dueño / Vendedor)
                     </Link>
                   </div>
                 </div>

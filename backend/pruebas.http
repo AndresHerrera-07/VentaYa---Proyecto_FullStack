@@ -191,7 +191,7 @@ POST {{baseUrl}}/auth/login
 Content-Type: application/json
 
 {
-  "correo": "carmen@antojitos.sv",
+  "correo": "testeo@antojitos.sv",
   "password": "admin123"
 }
 
@@ -210,7 +210,7 @@ POST {{baseUrl}}/auth/login
 Content-Type: application/json
 
 {
-  "correo": "carmen@antojitos.sv",
+  "correo": "testeo@antojitos.sv",
   "password": "clave_incorrecta"
 }
 
