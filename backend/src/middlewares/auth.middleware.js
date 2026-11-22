@@ -17,10 +17,12 @@ export function verificarToken(req, res, next) {
   const token = authHeader.split(' ')[1];
 
   try {
-    const decodificado = jwt.verify(
-      token,
-      process.env.JWT_SECRET || 'clave_secreta_super_segura_vendeya_2026'
-    );
+    const jwtSecret = process.env.JWT_SECRET || (process.env.NODE_ENV === 'production' ? null : 'clave_secreta_super_segura_vendeya_2026');
+    if (!jwtSecret) {
+      throw new Error('JWT_SECRET no configurado en producción');
+    }
+
+    const decodificado = jwt.verify(token, jwtSecret);
     req.usuario = decodificado;
     next();
   } catch (error) {

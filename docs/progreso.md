@@ -3,7 +3,7 @@
 ## Estado actual
 
 - Entrega en curso: 4 (Publicación y Presentación)
-- Última actualización: 08/11/2026
+- Última actualización: 22/11/2026
 - Estado general: Entregas 1, 2, 3 y 4 implementadas y probadas al 100%. Sistema funcional con base de datos MySQL relacional, carrito reactivo, checkout atómico con transacciones SQL, máquina de estados de pedidos, dashboard con Recharts, QR interactivo y carga dual de imágenes (archivo local o enlace web).
 
 ## Tareas por entrega
@@ -306,6 +306,27 @@
 
 - **Decisiones:**
   - Se eliminaron las opciones de demo para dotar a la plataforma de mayor realismo y seguridad operativa en producción.
+
+### Sesión 10 — Configuración para Despliegue en Producción (Render y Vercel)
+
+- **Fecha:** 22/11/2026
+- **Hecho:**
+  - **Backend:**
+    - `src/index.js` actualizado para escuchar en `process.env.PORT || 3000` sin prefijar host.
+    - CORS configurado para admitir dominios desde la variable `FRONTEND_URL` (soporte multiorigen delimitado por comas y comodín `*`).
+    - Verificación estricta de `process.env.JWT_SECRET`: en producción (`NODE_ENV=production`) la aplicación se niega a iniciar si no está configurada la clave secreta.
+    - Agregada ruta `GET /health` que responde `{ "ok": true }` para el health check automático de Render.
+    - Parámetros de base de datos leídos 100% de variables de entorno (`DB_HOST`, `DB_PORT`, `DB_USER`, `DB_PASSWORD`, `DB_NAME`, `DB_SSL`).
+    - Soporte condicional de SSL para MariaDB/MySQL en la nube (`DB_SSL=true` activa `rejectUnauthorized: true`).
+    - Creado `backend/.env.example` con valores de plantilla seguros.
+  - **Frontend:**
+    - Centralizada la URL del backend en `src/config/api.js` y `src/config.js` leyendo `import.meta.env.VITE_API_URL` con fallback dinámico local solo en desarrollo.
+    - Creado `frontend/.env.example` con la variable `VITE_API_URL`.
+    - Creado `frontend/vercel.json` con regla de reescritura para React Router (`/.* -> /`).
+  - **Repositorio y Seguridad:**
+    - Verificado `.gitignore` en raíz, backend y frontend para excluir `.env` y carpetas de compilación, permitiendo rastrear `.env.example`.
+    - Confirmada ausencia de archivos `.env` reales en el historial de Git.
+    - Cambios subidos a GitHub en la rama `main` con el commit `"Render Web"`.
 
 ## Instrucciones de actualización
 

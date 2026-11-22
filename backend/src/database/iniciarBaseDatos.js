@@ -20,7 +20,8 @@ export async function iniciarBaseDatos(opciones = {}) {
     user: process.env.DB_USER || 'root',
     password: process.env.DB_PASSWORD || '',
     port: Number(process.env.DB_PORT) || 3306,
-    socketPath: process.env.DB_SOCKET || undefined
+    socketPath: process.env.DB_SOCKET || undefined,
+    ssl: process.env.DB_SSL === 'true' ? { rejectUnauthorized: true } : undefined
   });
 
   const nombreBd = process.env.DB_NAME || 'vendeya_db';

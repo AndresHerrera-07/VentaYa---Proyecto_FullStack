@@ -11,12 +11,27 @@ import authRoutes from './routes/auth.routes.js';
 
 dotenv.config();
 
+// Validación de seguridad: en producción JWT_SECRET es estrictamente obligatorio
+if (process.env.NODE_ENV === 'production' && !process.env.JWT_SECRET) {
+  throw new Error('FATAL: La variable de entorno JWT_SECRET es obligatoria en producción.');
+}
+
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-// Middlewares globales
+// Configuración de CORS con origen desde FRONTEND_URL (admite varios orígenes separados por coma)
+const frontendEnv = process.env.FRONTEND_URL || 'http://localhost:5173,http://127.0.0.1:5173';
+const origenesPermitidos = frontendEnv.split(',').map((orig) => orig.trim()).filter(Boolean);
+
 app.use(cors({
-  origin: true, // Refleja dinámicamente cualquier origen (localhost, 127.0.0.1, IP local)
+  origin: (origin, callback) => {
+    // Permitir peticiones sin encabezado Origin (curl, health checks de Render, etc.)
+    if (!origin) return callback(null, true);
+    if (origenesPermitidos.includes(origin) || origenesPermitidos.includes('*')) {
+      return callback(null, true);
+    }
+    return callback(new Error(`Origen no permitido por CORS: ${origin}`));
+  },
   credentials: true
 }));
 app.use(express.json({ limit: '10mb' }));
@@ -28,15 +43,20 @@ app.use((req, res, next) => {
   if (authHeader && authHeader.startsWith('Bearer ')) {
     const token = authHeader.split(' ')[1];
     try {
-      req.usuario = jwt.verify(
-        token,
-        process.env.JWT_SECRET || 'clave_secreta_super_segura_vendeya_2026'
-      );
+      const secret = process.env.JWT_SECRET || (process.env.NODE_ENV === 'production' ? null : 'clave_secreta_super_segura_vendeya_2026');
+      if (secret) {
+        req.usuario = jwt.verify(token, secret);
+      }
     } catch {
       // Si el token es inválido, continúa sin fijar req.usuario
     }
   }
   next();
+});
+
+// Endpoint de comprobación de salud para Render (Web Service Health Check)
+app.get('/health', (req, res) => {
+  res.status(200).json({ ok: true });
 });
 
 // Endpoint de diagnóstico y salud del servidor
@@ -71,9 +91,9 @@ app.use((err, req, res, next) => {
   });
 });
 
-// Iniciar servidor HTTP en todas las interfaces de red
-app.listen(PORT, '0.0.0.0', async () => {
-  console.log(`🚀 Servidor VendeYa escuchando en http://localhost:${PORT}`);
+// Iniciar servidor HTTP escuchando en process.env.PORT (sin fijar localhost como host)
+app.listen(PORT, async () => {
+  console.log(`🚀 Servidor VendeYa escuchando en el puerto ${PORT}`);
   await probarConexion();
   try {
     await iniciarBaseDatos();

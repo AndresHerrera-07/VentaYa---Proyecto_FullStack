@@ -59,9 +59,14 @@ router.post('/login', validarSchema(loginSchema), async (req, res, next) => {
       negocioId: usuario.negocioId
     };
 
+    const jwtSecret = process.env.JWT_SECRET || (process.env.NODE_ENV === 'production' ? null : 'clave_secreta_super_segura_vendeya_2026');
+    if (!jwtSecret) {
+      throw new Error('JWT_SECRET no configurado en producción');
+    }
+
     const token = jwt.sign(
       payload,
-      process.env.JWT_SECRET || 'clave_secreta_super_segura_vendeya_2026',
+      jwtSecret,
       { expiresIn: '7d' }
     );
 
