@@ -22,6 +22,7 @@ import {
 } from 'lucide-react';
 import { API_BASE } from '../config/api.js';
 import { useCarrito } from '../context/CarritoContext.jsx';
+import { MAX_POR_PRODUCTO } from '../config/constantes.js';
 
 export default function CatalogoPublico() {
   const { slug } = useParams();
@@ -423,6 +424,10 @@ export default function CatalogoPublico() {
             {productos.map((prod) => {
               const estaAgotado = prod.stock <= 0;
               const recienAgregado = idProductoReciente === prod.id;
+              const itemEnCarrito = itemsCarrito.find((i) => i.producto.id === prod.id);
+              const cantidadEnCarrito = itemEnCarrito ? itemEnCarrito.cantidad : 0;
+              const limiteMax = Math.min(MAX_POR_PRODUCTO, prod.stock);
+              const alcanzoLimite = cantidadEnCarrito >= limiteMax;
 
               return (
                 <div
@@ -495,9 +500,10 @@ export default function CatalogoPublico() {
 
                     <button
                       onClick={() => manejarAgregarAlCarrito(prod)}
-                      disabled={estaAgotado}
+                      disabled={estaAgotado || alcanzoLimite}
+                      title={alcanzoLimite && !estaAgotado ? `Límite máximo de ${limiteMax} alcanzado` : ''}
                       className={`px-4 py-2 rounded-xl text-xs font-semibold transition-all flex items-center gap-1.5 ${
-                        estaAgotado
+                        estaAgotado || alcanzoLimite
                           ? 'bg-stone-200 dark:bg-stone-800 text-stone-400 cursor-not-allowed'
                           : recienAgregado
                           ? 'bg-emerald-600 text-white shadow-xs scale-105'
@@ -506,6 +512,8 @@ export default function CatalogoPublico() {
                     >
                       {estaAgotado ? (
                         'Agotado'
+                      ) : alcanzoLimite ? (
+                        'Máx. en carrito'
                       ) : recienAgregado ? (
                         <>
                           <CheckCircle2 className="w-3.5 h-3.5" /> ¡Agregado!
@@ -622,12 +630,13 @@ export default function CatalogoPublico() {
                           </span>
                           <button
                             onClick={() => actualizarCantidad(item.producto.id, item.cantidad + 1)}
-                            disabled={item.cantidad >= item.producto.stock}
+                            disabled={item.cantidad >= Math.min(MAX_POR_PRODUCTO, item.producto.stock)}
                             className={`w-6 h-6 rounded-md flex items-center justify-center text-xs font-bold transition-colors ${
-                              item.cantidad >= item.producto.stock
+                              item.cantidad >= Math.min(MAX_POR_PRODUCTO, item.producto.stock)
                                 ? 'bg-stone-100 dark:bg-stone-800 text-stone-300 dark:text-stone-600 cursor-not-allowed'
                                 : 'bg-stone-100 dark:bg-stone-700 hover:bg-stone-200 dark:hover:bg-stone-600 text-stone-700 dark:text-stone-200'
                             }`}
+                            title={item.cantidad >= MAX_POR_PRODUCTO ? `Límite de ${MAX_POR_PRODUCTO} unidades por producto` : ''}
                           >
                             <Plus className="w-3 h-3" />
                           </button>

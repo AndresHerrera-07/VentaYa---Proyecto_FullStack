@@ -1,15 +1,26 @@
 import { createContext, useContext, useState, useEffect } from 'react';
+import { MAX_POR_PRODUCTO } from '../config/constantes.js';
 
 const CarritoContext = createContext(null);
 
 const CLAVE_STORAGE = 'vendeya_carrito_v1';
 
 export function CarritoProvider({ children }) {
-  // Cargar estado inicial desde localStorage
+  // Cargar estado inicial desde localStorage asegurando el límite MAX_POR_PRODUCTO
   const [items, setItems] = useState(() => {
     try {
       const guardado = localStorage.getItem(CLAVE_STORAGE);
-      return guardado ? JSON.parse(guardado) : [];
+      if (!guardado) return [];
+      const parseado = JSON.parse(guardado);
+      if (!Array.isArray(parseado)) return [];
+      return parseado.map((item) => {
+        const stock = item.producto?.stock ?? MAX_POR_PRODUCTO;
+        const limiteMax = Math.min(MAX_POR_PRODUCTO, stock);
+        return {
+          ...item,
+          cantidad: Math.max(1, Math.min(item.cantidad || 1, limiteMax))
+        };
+      });
     } catch {
       return [];
     }
@@ -30,12 +41,14 @@ export function CarritoProvider({ children }) {
 
     setItems((itemsActuales) => {
       const indiceExistente = itemsActuales.findIndex((i) => i.producto.id === producto.id);
+      // Límite: el menor entre MAX_POR_PRODUCTO y el stock disponible
+      const limiteMax = Math.min(MAX_POR_PRODUCTO, producto.stock);
 
       if (indiceExistente >= 0) {
-        // Si ya está en el carrito, aumentar cantidad sin exceder stock
+        // Si ya está en el carrito, aumentar cantidad sin exceder el límite
         const copia = [...itemsActuales];
         const cantidadTotal = copia[indiceExistente].cantidad + cantidad;
-        const cantidadValida = Math.min(cantidadTotal, producto.stock);
+        const cantidadValida = Math.min(cantidadTotal, limiteMax);
 
         copia[indiceExistente] = {
           ...copia[indiceExistente],
@@ -49,7 +62,7 @@ export function CarritoProvider({ children }) {
         ...itemsActuales,
         {
           producto,
-          cantidad: Math.min(cantidad, producto.stock)
+          cantidad: Math.min(cantidad, limiteMax)
         }
       ];
     });
@@ -67,10 +80,11 @@ export function CarritoProvider({ children }) {
     setItems((itemsActuales) =>
       itemsActuales.map((item) => {
         if (item.producto.id === productoId) {
-          const maxStock = item.producto.stock;
+          // Límite: el menor entre MAX_POR_PRODUCTO y el stock disponible
+          const limiteMax = Math.min(MAX_POR_PRODUCTO, item.producto.stock);
           return {
             ...item,
-            cantidad: Math.min(nuevaCantidad, maxStock)
+            cantidad: Math.min(nuevaCantidad, limiteMax)
           };
         }
         return item;

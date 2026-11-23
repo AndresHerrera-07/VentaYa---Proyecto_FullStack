@@ -7,8 +7,9 @@ export function validarSchema(schema) {
       next();
     } catch (error) {
       // Capturar los errores de validación de Zod y formatearlos en español
-      if (error.errors) {
-        const errores = error.errors.map((err) => ({
+      const listaErrores = error.errors || error.issues;
+      if (listaErrores && Array.isArray(listaErrores)) {
+        const errores = listaErrores.map((err) => ({
           campo: err.path.join('.'),
           mensaje: err.message
         }));

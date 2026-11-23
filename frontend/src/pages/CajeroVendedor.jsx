@@ -15,6 +15,7 @@ import {
 } from 'lucide-react';
 import { API_BASE } from '../config/api.js';
 import { useAuth } from '../context/AuthContext.jsx';
+import { MAX_POR_PRODUCTO } from '../config/constantes.js';
 
 export default function CajeroVendedor() {
   const { usuario } = useAuth();
@@ -69,8 +70,14 @@ export default function CajeroVendedor() {
     setItemsOrden((prev) => {
       const existe = prev.find((item) => item.producto.id === prod.id);
       if (existe) {
-        if (prod.stock > 0 && existe.cantidad >= prod.stock) {
-          setError(`No hay más existencias disponibles de "${prod.nombre}". Stock: ${prod.stock}`);
+        // Límite: el menor entre MAX_POR_PRODUCTO y el stock disponible
+        const limiteMax = Math.min(MAX_POR_PRODUCTO, prod.stock);
+        if (existe.cantidad >= limiteMax) {
+          setError(
+            prod.stock < MAX_POR_PRODUCTO
+              ? `No hay más existencias disponibles de "${prod.nombre}". Stock: ${prod.stock}`
+              : `Límite máximo de ${MAX_POR_PRODUCTO} unidades por producto alcanzado.`
+          );
           return prev;
         }
         return prev.map((item) =>
@@ -87,8 +94,14 @@ export default function CajeroVendedor() {
       quitarDelTicket(productoId);
       return;
     }
-    if (stockMax > 0 && nuevaCantidad > stockMax) {
-      setError(`Stock máximo alcanzado (${stockMax} unidades).`);
+    // Límite: el menor entre MAX_POR_PRODUCTO y el stock disponible
+    const limiteMax = stockMax > 0 ? Math.min(MAX_POR_PRODUCTO, stockMax) : MAX_POR_PRODUCTO;
+    if (nuevaCantidad > limiteMax) {
+      setError(
+        stockMax < MAX_POR_PRODUCTO
+          ? `Stock máximo alcanzado (${stockMax} unidades).`
+          : `Límite máximo de ${MAX_POR_PRODUCTO} unidades por producto.`
+      );
       return;
     }
     setItemsOrden((prev) =>

@@ -18,142 +18,172 @@ const TRANSICIONES_PERMITIDAS = {
   cancelado: []  // Estado final
 };
 
+// Límite máximo de unidades por producto en un solo pedido
+const MAX_POR_PRODUCTO = 4;
+
 // ============================================================
 // HU-08: Checkout Express con Transacciones SQL (RN-05, RN-06, RN-07, RN-08)
 // ============================================================
 router.post('/checkout', validarSchema(checkoutSchema), async (req, res, next) => {
-  const conexion = await pool.getConnection();
-
   try {
     const { clienteNombre, clienteTelefono, slug, items } = req.body;
 
-    // 1. Determinar el negocio_id (por slug o predeterminado)
-    let negocioId = 1;
-    if (slug) {
-      const [negocios] = await conexion.query(
-        'SELECT id FROM negocios WHERE slug = ? LIMIT 1',
-        [slug]
-      );
-      if (negocios.length === 0) {
-        conexion.release();
-        return res.status(404).json({
-          ok: false,
-          mensaje: `No se encontró el negocio "${slug}"`
-        });
-      }
-      negocioId = negocios[0].id;
-    }
-
-    // 2. Iniciar Transacción SQL Atómica (RN-07)
-    await conexion.beginTransaction();
-
-    let totalCalculado = 0;
-    const detallesParaInsertar = [];
-
-    // 3. Validar productos, pertenencia, precios vigentes y existencias con bloqueo de fila
+    // Agrupar items por productoId para detectar duplicados y validar límite total
+    const mapaItems = new Map();
     for (const item of items) {
-      const [filas] = await conexion.query(
-        `SELECT id, negocio_id AS negocioId, nombre, precio, stock, activo 
-         FROM productos 
-         WHERE id = ? FOR UPDATE`,
-        [item.productoId]
+      const actual = mapaItems.get(item.productoId) || 0;
+      mapaItems.set(item.productoId, actual + item.cantidad);
+    }
+
+    // Validar que ningún producto (tras agrupar) supere MAX_POR_PRODUCTO
+    for (const [productoId, cantidadTotal] of mapaItems.entries()) {
+      if (cantidadTotal > MAX_POR_PRODUCTO) {
+        return res.status(400).json({
+          ok: false,
+          mensaje: `La cantidad máxima por producto es ${MAX_POR_PRODUCTO} unidades (producto ID ${productoId}: se solicitaron ${cantidadTotal})`
+        });
+      }
+    }
+
+    // Reconstruir lista sin duplicados
+    const itemsAgrupados = Array.from(mapaItems.entries()).map(([productoId, cantidad]) => ({
+      productoId,
+      cantidad
+    }));
+
+    const conexion = await pool.getConnection();
+
+    try {
+      // 1. Determinar el negocio_id (por slug o predeterminado)
+      let negocioId = 1;
+      if (slug) {
+        const [negocios] = await conexion.query(
+          'SELECT id FROM negocios WHERE slug = ? LIMIT 1',
+          [slug]
+        );
+        if (negocios.length === 0) {
+          conexion.release();
+          return res.status(404).json({
+            ok: false,
+            mensaje: `No se encontró el negocio "${slug}"`
+          });
+        }
+        negocioId = negocios[0].id;
+      }
+
+      // 2. Iniciar Transacción SQL Atómica (RN-07)
+      await conexion.beginTransaction();
+
+      let totalCalculado = 0;
+      const detallesParaInsertar = [];
+
+      // 3. Validar productos, pertenencia, precios vigentes y existencias con bloqueo de fila
+      for (const item of itemsAgrupados) {
+        const [filas] = await conexion.query(
+          `SELECT id, negocio_id AS negocioId, nombre, precio, stock, activo
+           FROM productos
+           WHERE id = ? FOR UPDATE`,
+          [item.productoId]
+        );
+
+        if (filas.length === 0 || filas[0].activo !== 1) {
+          await conexion.rollback();
+          conexion.release();
+          return res.status(400).json({
+            ok: false,
+            mensaje: `El producto solicitado con ID ${item.productoId} no está disponible`
+          });
+        }
+
+        const prod = filas[0];
+
+        // RN-06: Verificar que el producto pertenezca al negocio de la tienda
+        if (prod.negocioId !== negocioId) {
+          await conexion.rollback();
+          conexion.release();
+          return res.status(400).json({
+            ok: false,
+            mensaje: `El producto "${prod.nombre}" no pertenece a este comercio`
+          });
+        }
+
+        // RN-05: El inventario nunca puede ser negativo
+        if (prod.stock < item.cantidad) {
+          await conexion.rollback();
+          conexion.release();
+          return res.status(409).json({
+            ok: false,
+            mensaje: `Existencias insuficientes para "${prod.nombre}". Disponibles: ${prod.stock}, solicitadas: ${item.cantidad}`
+          });
+        }
+
+        // RN-11 y RN-08: Subtotal calculado en el servidor usando precio vigente en base de datos
+        const precioUnitario = Number(prod.precio);
+        const subtotal = precioUnitario * item.cantidad;
+        totalCalculado += subtotal;
+
+        detallesParaInsertar.push({
+          productoId: prod.id,
+          nombre: prod.nombre,
+          cantidad: item.cantidad,
+          precioUnitario
+        });
+      }
+
+      // RN-12: Total del pedido redondeado a 2 decimales
+      totalCalculado = Number(totalCalculado.toFixed(2));
+
+      // 4. Registrar cabecera del pedido en tabla `pedidos`
+      const [resultadoPedido] = await conexion.query(
+        `INSERT INTO pedidos
+          (negocio_id, cliente_nombre, cliente_telefono, total, estado, fecha_creacion)
+         VALUES (?, ?, ?, ?, 'pendiente', NOW())`,
+        [negocioId, clienteNombre, clienteTelefono, totalCalculado]
       );
 
-      if (filas.length === 0 || filas[0].activo !== 1) {
-        await conexion.rollback();
-        conexion.release();
-        return res.status(400).json({
-          ok: false,
-          mensaje: `El producto solicitado con ID ${item.productoId} no está disponible`
-        });
+      const pedidoId = resultadoPedido.insertId;
+
+      // 5. Registrar detalles y descontar inventario atómicamente
+      for (const det of detallesParaInsertar) {
+        // Insertar en `detalles_pedido`
+        await conexion.query(
+          `INSERT INTO detalles_pedido
+            (negocio_id, pedido_id, producto_id, cantidad, precio_unitario)
+           VALUES (?, ?, ?, ?, ?)`,
+          [negocioId, pedidoId, det.productoId, det.cantidad, det.precioUnitario]
+        );
+
+        // Descontar inventario (RN-05)
+        await conexion.query(
+          `UPDATE productos
+           SET stock = stock - ?
+           WHERE id = ?`,
+          [det.cantidad, det.productoId]
+        );
       }
 
-      const prod = filas[0];
+      // 6. Confirmar la transacción SQL (COMMIT)
+      await conexion.commit();
+      conexion.release();
 
-      // RN-06: Verificar que el producto pertenezca al negocio de la tienda
-      if (prod.negocioId !== negocioId) {
-        await conexion.rollback();
-        conexion.release();
-        return res.status(400).json({
-          ok: false,
-          mensaje: `El producto "${prod.nombre}" no pertenece a este comercio`
-        });
-      }
-
-      // RN-05: El inventario nunca puede ser negativo
-      if (prod.stock < item.cantidad) {
-        await conexion.rollback();
-        conexion.release();
-        return res.status(409).json({
-          ok: false,
-          mensaje: `Existencias insuficientes para "${prod.nombre}". Disponibles: ${prod.stock}, solicitadas: ${item.cantidad}`
-        });
-      }
-
-      // RN-11 y RN-08: Subtotal calculado en el servidor usando precio vigente en base de datos
-      const precioUnitario = Number(prod.precio);
-      const subtotal = precioUnitario * item.cantidad;
-      totalCalculado += subtotal;
-
-      detallesParaInsertar.push({
-        productoId: prod.id,
-        nombre: prod.nombre,
-        cantidad: item.cantidad,
-        precioUnitario
+      res.status(201).json({
+        ok: true,
+        mensaje: '¡Pedido confirmado exitosamente! Tu orden ya fue enviada al comercio.',
+        datos: {
+          pedidoId,
+          clienteNombre,
+          clienteTelefono,
+          total: totalCalculado,
+          estado: 'pendiente',
+          items: detallesParaInsertar
+        }
       });
+    } catch (error) {
+      await conexion.rollback();
+      conexion.release();
+      next(error);
     }
-
-    // RN-12: Total del pedido redondeado a 2 decimales
-    totalCalculado = Number(totalCalculado.toFixed(2));
-
-    // 4. Registrar cabecera del pedido en tabla `pedidos`
-    const [resultadoPedido] = await conexion.query(
-      `INSERT INTO pedidos 
-        (negocio_id, cliente_nombre, cliente_telefono, total, estado, fecha_creacion)
-       VALUES (?, ?, ?, ?, 'pendiente', NOW())`,
-      [negocioId, clienteNombre, clienteTelefono, totalCalculado]
-    );
-
-    const pedidoId = resultadoPedido.insertId;
-
-    // 5. Registrar detalles y descontar inventario atómicamente
-    for (const det of detallesParaInsertar) {
-      // Insertar en `detalles_pedido`
-      await conexion.query(
-        `INSERT INTO detalles_pedido 
-          (negocio_id, pedido_id, producto_id, cantidad, precio_unitario)
-         VALUES (?, ?, ?, ?, ?)`,
-        [negocioId, pedidoId, det.productoId, det.cantidad, det.precioUnitario]
-      );
-
-      // Descontar inventario (RN-05)
-      await conexion.query(
-        `UPDATE productos 
-         SET stock = stock - ? 
-         WHERE id = ?`,
-        [det.cantidad, det.productoId]
-      );
-    }
-
-    // 6. Confirmar la transacción SQL (COMMIT)
-    await conexion.commit();
-    conexion.release();
-
-    res.status(201).json({
-      ok: true,
-      mensaje: '¡Pedido confirmado exitosamente! Tu orden ya fue enviada al comercio.',
-      datos: {
-        pedidoId,
-        clienteNombre,
-        clienteTelefono,
-        total: totalCalculado,
-        estado: 'pendiente',
-        items: detallesParaInsertar
-      }
-    });
   } catch (error) {
-    await conexion.rollback();
-    conexion.release();
     next(error);
   }
 });
@@ -167,7 +197,7 @@ router.get('/', async (req, res, next) => {
     const { estado } = req.query;
 
     let sql = `
-      SELECT 
+      SELECT
         id,
         negocio_id AS negocioId,
         cliente_nombre AS clienteNombre,
@@ -209,7 +239,7 @@ router.get('/metricas/dashboard', async (req, res, next) => {
 
     // 1. Resumen general: total ventas, pedidos totales, pendientes y productos
     const [totalesVentas] = await pool.query(
-      `SELECT 
+      `SELECT
         COALESCE(SUM(CASE WHEN estado != 'cancelado' THEN total ELSE 0 END), 0) AS ingresosTotales,
         COUNT(*) AS totalPedidos,
         SUM(CASE WHEN estado = 'pendiente' THEN 1 ELSE 0 END) AS pedidosPendientes
@@ -237,7 +267,7 @@ router.get('/metricas/dashboard', async (req, res, next) => {
 
     // 3. Ventas de los últimos 7 días para Recharts
     const [ventasDias] = await pool.query(
-      `SELECT 
+      `SELECT
         DATE_FORMAT(fecha_creacion, '%d/%m') AS dia,
         COALESCE(SUM(CASE WHEN estado != 'cancelado' THEN total ELSE 0 END), 0) AS total,
         COUNT(*) AS pedidos
@@ -281,7 +311,7 @@ router.get('/:id', async (req, res, next) => {
     const { id } = req.params;
 
     const [pedidos] = await pool.query(
-      `SELECT 
+      `SELECT
         id,
         negocio_id AS negocioId,
         cliente_nombre AS clienteNombre,
@@ -303,7 +333,7 @@ router.get('/:id', async (req, res, next) => {
     }
 
     const [detalles] = await pool.query(
-      `SELECT 
+      `SELECT
         dp.id,
         dp.producto_id AS productoId,
         p.nombre,

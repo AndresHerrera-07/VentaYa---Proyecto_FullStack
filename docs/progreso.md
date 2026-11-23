@@ -328,6 +328,24 @@
     - Confirmada ausencia de archivos `.env` reales en el historial de Git.
     - Cambios subidos a GitHub en la rama `main` con el commit `"Render Web"`.
 
+### Sesión 11 — Límite de 4 Unidades por Producto y Validación Consolidada
+
+- **Fecha:** 23/11/2026
+- **Hecho:**
+  - **Frontend:**
+    - Creada constante compartida `MAX_POR_PRODUCTO = 4` en `frontend/src/config/constantes.js` y re-exportada en `frontend/src/config.js`.
+    - `CarritoContext.jsx` actualizado para limitar tanto al agregar como al actualizar cantidades al mínimo entre `MAX_POR_PRODUCTO` y el `stock` del producto (`Math.min(MAX_POR_PRODUCTO, stock)`).
+    - Agregado saneamiento en la carga inicial de `localStorage` para recortar carritos preexistentes que excedieran el tope.
+    - `CatalogoPublico.jsx` actualizado: botón "+" en el carrito y botón "Agregar al carrito" en el catálogo se deshabilitan al alcanzar el tope (4 unidades o stock agotado).
+    - Se adaptaron también `NuevoPedidoVendedor.jsx` y `CajeroVendedor.jsx` para respetar el límite de 4 unidades.
+  - **Backend:**
+    - `pedido.schema.js` actualizado con validación Zod: `cantidad.max(4)` y `.refine()` que consolida las líneas por `productoId` para impedir burlar el límite repitiendo productos en el pedido.
+    - `pedidos.routes.js` reforzado para consolidar y verificar que la suma por producto no exceda 4 antes y durante la transacción SQL, devolviendo HTTP 400.
+    - Pruebas directas con curl: pedidos de 5 unidades y pedidos con líneas divididas (3 + 2 = 5) responden con código 400 Bad Request; pedidos de 4 unidades confirman exitosamente con código 201 Created.
+
+- **Decisiones:**
+  - El límite de 4 unidades por producto aplica de manera global y consolidada para garantizar un reparto equitativo del inventario disponible entre clientes.
+
 ## Instrucciones de actualización
 
 - Marcar una tarea como completada únicamente cuando haya sido implementada y probada.

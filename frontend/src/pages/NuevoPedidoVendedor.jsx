@@ -14,6 +14,7 @@ import {
 } from 'lucide-react';
 import { API_BASE } from '../config/api.js';
 import { useAuth } from '../context/AuthContext.jsx';
+import { MAX_POR_PRODUCTO } from '../config/constantes.js';
 
 export default function NuevoPedidoVendedor() {
   const navigate = useNavigate();
@@ -57,7 +58,9 @@ export default function NuevoPedidoVendedor() {
       const idx = prev.findIndex((i) => i.producto.id === producto.id);
       if (idx >= 0) {
         const copia = [...prev];
-        const nuevaCant = Math.min(copia[idx].cantidad + 1, producto.stock);
+        // Límite: el menor entre MAX_POR_PRODUCTO y el stock disponible
+        const limiteMax = Math.min(MAX_POR_PRODUCTO, producto.stock);
+        const nuevaCant = Math.min(copia[idx].cantidad + 1, limiteMax);
         copia[idx] = { ...copia[idx], cantidad: nuevaCant };
         return copia;
       }
@@ -73,7 +76,9 @@ export default function NuevoPedidoVendedor() {
     setItemsPedido((prev) =>
       prev.map((i) => {
         if (i.producto.id === prodId) {
-          return { ...i, cantidad: Math.min(cant, i.producto.stock) };
+          // Límite: el menor entre MAX_POR_PRODUCTO y el stock disponible
+          const limiteMax = Math.min(MAX_POR_PRODUCTO, i.producto.stock);
+          return { ...i, cantidad: Math.min(cant, limiteMax) };
         }
         return i;
       })
@@ -308,7 +313,7 @@ export default function NuevoPedidoVendedor() {
                         <button
                           type="button"
                           onClick={() => modificarCantidad(item.producto.id, item.cantidad + 1)}
-                          disabled={item.cantidad >= item.producto.stock}
+                          disabled={item.cantidad >= Math.min(MAX_POR_PRODUCTO, item.producto.stock)}
                           className="w-5 h-5 rounded-md bg-stone-200 text-stone-700 flex items-center justify-center text-xs disabled:opacity-30"
                         >
                           <Plus className="w-3 h-3" />

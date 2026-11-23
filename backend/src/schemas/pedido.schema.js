@@ -1,5 +1,8 @@
 import { z } from 'zod';
 
+// Límite máximo de unidades por producto en un mismo pedido (RN-04)
+const MAX_POR_PRODUCTO = 4;
+
 // Esquema de validación para el Checkout Express (HU-08)
 export const checkoutSchema = z.object({
   clienteNombre: z
@@ -30,6 +33,9 @@ export const checkoutSchema = z.object({
           .number({ required_error: 'La cantidad es obligatoria' })
           .int()
           .min(1, { message: 'La cantidad mínima por producto es 1' })
+          .max(MAX_POR_PRODUCTO, {
+            message: `La cantidad máxima por producto es ${MAX_POR_PRODUCTO} unidades`
+          })
       })
     )
     .min(1, { message: 'El pedido debe contener al menos un producto' })
