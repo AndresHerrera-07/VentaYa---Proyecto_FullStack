@@ -8,6 +8,7 @@
     "start": "node src/index.js",
     "db:init": "node src/database/iniciarBaseDatos.js",
     "db:reset": "node src/database/iniciarBaseDatos.js --reset",
+    "db:migrar-stock": "node src/database/migrarStock.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [],
